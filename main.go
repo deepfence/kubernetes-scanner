@@ -37,7 +37,12 @@ const (
 )
 
 func main() {
-	exec.Command("/bin/sh", "/home/deepfence/token.sh")
+	_, err := exec.Command("/bin/sh", "/home/deepfence/token.sh").CombinedOutput()
+	if err != nil {
+		logrus.Error(err)
+	} else {
+		logrus.Debug("Token generated successfully")
+	}
 	flag.Parse()
 
 	customFormatter := new(logrus.TextFormatter)
@@ -66,12 +71,19 @@ func main() {
 		NodeId:                *nodeId,
 	}
 	config.Token, _ = getApiAccessToken(config)
-
+	logrus.Debug("Token generated success:{}", config.Token)
+	fmt.Println("Token generated success:{}", config.Token)
 	runServices(config)
 }
 
 func runServices(config util.Config) {
-	registerNodeId(config)
+	ticker := time.NewTicker(1 * time.Minute / 2)
+	for {
+		select {
+		case <-ticker.C:
+			registerNodeId(config)
+		}
+	}
 }
 
 func registerNodeId(config util.Config) {
@@ -82,7 +94,10 @@ func registerNodeId(config util.Config) {
 		map[string]string{"Authorization": "Bearer " + config.Token}, config)
 	if err != nil {
 		logrus.Error(err)
+		fmt.Println(err.Error())
 	}
+	fmt.Println(resp)
+	logrus.Error(resp)
 	var scansResponse util.ScansResponse
 	err = json.Unmarshal(resp, &scansResponse)
 	if err != nil {
