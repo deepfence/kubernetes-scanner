@@ -23,16 +23,20 @@ WORKDIR /opt/steampipe
 USER root
 RUN chown deepfence /opt/steampipe
 RUN chown deepfence /usr/local/bin/kspm
+COPY kubeconfig /home/deepfence/.kube/config
+COPY token.sh /home/deepfence/token.sh
+RUN chown deepfence /home/deepfence/.kube/config 
+RUN chown deepfence /home/deepfence/token.sh
 
 USER deepfence
 RUN steampipe plugin install steampipe \
     && steampipe plugin install kubernetes \
     && git clone https://github.com/turbot/steampipe-mod-kubernetes-compliance.git
 
-COPY kubeconfig /home/deepfence/.kube/config
-COPY token.sh /home/deepfence/token.sh
-RUN chown deepfence /home/deepfence/.kube/config
-RUN chown deepfence /home/deepfence/token.sh
+#COPY kubeconfig /home/deepfence/.kube/config
+#COPY token.sh /home/deepfence/token.sh
+#RUN chown deepfence /home/deepfence/.kube/config
+#RUN chown deepfence /home/deepfence/token.sh
 EXPOSE 8080
 
 ENTRYPOINT ["/usr/local/bin/kspm"]
