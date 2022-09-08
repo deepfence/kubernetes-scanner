@@ -87,6 +87,8 @@ func runServices(config util.Config) {
 }
 
 func registerNodeId(config util.Config) {
+	logrus.Error(config.NodeId)
+	logrus.Error(config)
 	registerNodePayload := `{"node_id": "` + config.NodeId + `"}`
 	resp, _, err := HttpRequest(MethodPost,
 		"https://"+config.ManagementConsoleUrl+"/deepfence/v1.5/cloud_compliance/kubernetes",
@@ -96,8 +98,8 @@ func registerNodeId(config util.Config) {
 		logrus.Error(err)
 		fmt.Println(err.Error())
 	}
-	fmt.Println(resp)
-	logrus.Error(resp)
+	//fmt.Println(string(resp))
+	logrus.Error(string(resp))
 	var scansResponse util.ScansResponse
 	err = json.Unmarshal(resp, &scansResponse)
 	if err != nil {
