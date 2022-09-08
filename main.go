@@ -1,4 +1,4 @@
-package kspm
+package main
 
 import (
 	"bytes"

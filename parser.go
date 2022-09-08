@@ -1,4 +1,4 @@
-package kspm
+package main
 
 import (
 	"crypto/md5"
