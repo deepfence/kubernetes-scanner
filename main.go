@@ -120,6 +120,8 @@ func registerNodeId(config util.Config) {
 				continue
 			}
 			config.ScanId = scanId
+			logrus.Error("scanResult:")
+			logrus.Error(scanResult)
 			complianceDocs, complianceSummary, err := ParseComplianceResults(scanResult, config)
 			err = IngestComplianceResults(complianceDocs, config)
 			if err != nil {
@@ -239,7 +241,7 @@ type dfApiAuthResponse struct {
 
 func RunComplianceScan() (util.ComplianceGroup, error) {
 	tempFileName := fmt.Sprintf("/tmp/%s.json", util.RandomString(12))
-	defer os.Remove(tempFileName)
+	//defer os.Remove(tempFileName)
 	spKubePath := "/opt/steampipe/steampipe-mod-kubernetes-compliance"
 	cmd := fmt.Sprintf("cd %s && steampipe check --progress=false --output=none --export=%s all", spKubePath, tempFileName)
 	stdOut, stdErr := exec.Command("bash", "-c", cmd).CombinedOutput()
