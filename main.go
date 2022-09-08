@@ -120,8 +120,9 @@ func registerNodeId(config util.Config) {
 				continue
 			}
 			config.ScanId = scanId
+			b, _ := json.Marshal(scanResult)
 			logrus.Error("scanResult:")
-			logrus.Error(scanResult)
+			logrus.Error(string(b))
 			complianceDocs, complianceSummary, err := ParseComplianceResults(scanResult, config)
 			err = IngestComplianceResults(complianceDocs, config)
 			if err != nil {
