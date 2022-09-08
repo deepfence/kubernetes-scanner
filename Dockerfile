@@ -3,6 +3,7 @@ FROM golang:1.18-bullseye AS build
 WORKDIR /home/deepfence/src/kspm
 COPY . .
 RUN go build -o kspm .
+RUN chmod 777 kspm
 RUN cp /home/deepfence/src/kspm/kspm /home/deepfence/
 RUN rm -r /home/deepfence/src/*
 
@@ -30,6 +31,8 @@ RUN steampipe plugin install steampipe \
 
 COPY kubeconfig /home/deepfence/.kube/config
 COPY token.sh /home/deepfence/token.sh
+RUN chown deepfence /home/deepfence/.kube/config
+RUN chown deepfence /home/deepfence/token.sh
 EXPOSE 8080
 
 ENTRYPOINT ["/usr/local/bin/kspm"]
