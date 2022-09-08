@@ -21,6 +21,7 @@ COPY --from=build /home/deepfence/kspm /usr/local/bin/kspm
 WORKDIR /opt/steampipe
 USER root
 RUN chown deepfence /opt/steampipe
+RUN chown deepfence /usr/local/bin/kspm
 
 USER deepfence
 RUN steampipe plugin install steampipe \
