@@ -24,7 +24,7 @@ func parseControlResult(complianceDocs *[]util.ComplianceDoc, complianceSummary 
 		Group:                 group.Title,
 		TestCategory:          service,
 		TestInfo:              control.Title,
-		ComplianceCheckType:   "hipaa",
+		ComplianceCheckType:   "cis",
 		NodeType:              "kubernetes",
 		NodeName:              config.NodeId,
 		NodeId:                config.NodeId,

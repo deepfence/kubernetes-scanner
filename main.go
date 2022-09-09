@@ -109,14 +109,14 @@ func registerNodeId(config util.Config) {
 	for scanId, scanDetails := range scansResponse.Data.Scans {
 		if _, ok := pendingScans[scanId]; !ok {
 			pendingScans[scanId] = scanDetails
-			err := SendScanStatustoConsole(scanId, "hipaa", "", "INPROGRESS", nil, config)
+			err := SendScanStatustoConsole(scanId, "cis", "", "INPROGRESS", nil, config)
 
 			if err != nil {
 				logrus.Error(err)
 			}
 			scanResult, err := RunComplianceScan()
 			if err != nil {
-				err = SendScanStatustoConsole(scanId, "hipaa", err.Error(), "ERROR", nil, config)
+				err = SendScanStatustoConsole(scanId, "cis", err.Error(), "ERROR", nil, config)
 				continue
 			}
 			config.ScanId = scanId
@@ -134,7 +134,7 @@ func registerNodeId(config util.Config) {
 				"result":       complianceSummary,
 				"total_checks": complianceSummary.Alarm + complianceSummary.Ok + complianceSummary.Info + complianceSummary.Skip + complianceSummary.Error,
 			}
-			err = SendScanStatustoConsole(config.ScanId, "hipaa", "", "COMPLETED", extras, config)
+			err = SendScanStatustoConsole(config.ScanId, "cis", "", "COMPLETED", extras, config)
 			if err != nil {
 				logrus.Error(err)
 			}
