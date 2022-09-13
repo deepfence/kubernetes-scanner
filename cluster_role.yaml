@@ -8,14 +8,7 @@ rules:
       - ''
     resources:
       - pods
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - ''
-    resources:
-      - pods/log
+      - log
       - services
       - nodes
       - namespaces
@@ -23,6 +16,9 @@ rules:
       - persistentvolumeclaims
       - configmaps
       - endpoints
+      - replicationcontrollers
+      - serviceaccounts
+      - secrets
     verbs:
       - get
       - list
@@ -33,6 +29,7 @@ rules:
       - deployments
       - daemonsets
       - statefulsets
+      - replicasets
     verbs:
       - get
       - list
@@ -65,18 +62,6 @@ rules:
       - list
       - watch
   - apiGroups:
-      - apps
-    resources:
-      - deployments/scale
-    verbs:
-      - get
-  - apiGroups:
-      - extensions
-    resources:
-      - deployments/scale
-    verbs:
-      - get
-  - apiGroups:
       - storage.k8s.io
     resources:
       - storageclasses
@@ -90,5 +75,22 @@ rules:
       - volumesnapshots
       - volumesnapshotdatas
     verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - policy
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    roles:
+      - roles
+    verbs:
+      - get
       - list
       - watch
