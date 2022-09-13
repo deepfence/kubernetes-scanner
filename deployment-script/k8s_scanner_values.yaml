@@ -1,0 +1,4 @@
+managementConsoleUrl: "142.93.216.241"
+managementConsolePort: "443"
+deepfence-key: "2436a087-1925-4030-aa53-c28f73f858f4"
+clusterName: "saurabh-agent-new-k8s"
