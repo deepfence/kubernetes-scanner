@@ -244,7 +244,7 @@ func RunComplianceScan() (util.ComplianceGroup, error) {
 	tempFileName := fmt.Sprintf("/tmp/%s.json", util.RandomString(12))
 	//defer os.Remove(tempFileName)
 	spKubePath := "/opt/steampipe/steampipe-mod-kubernetes-compliance"
-	cmd := fmt.Sprintf("cd %s && steampipe check --progress=false --output=none --export=%s all", spKubePath, tempFileName)
+	cmd := fmt.Sprintf("cd %s && steampipe check --progress=false --output=none --export=%s benchmark.nsa_cisa_v1", spKubePath, tempFileName)
 	stdOut, stdErr := exec.Command("bash", "-c", cmd).CombinedOutput()
 	var complianceResults util.ComplianceGroup
 	if _, err := os.Stat(tempFileName); errors.Is(err, os.ErrNotExist) {
