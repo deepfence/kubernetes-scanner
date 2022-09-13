@@ -1,0 +1,4 @@
+managementConsoleUrl: ""
+managementConsolePort: "443"
+deepfence-key: ""
+clusterName: ""
