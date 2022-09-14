@@ -182,6 +182,12 @@ func HttpRequest(method string, requestUrl string, postReader io.Reader, header 
 				resp.Body.Close()
 				return response, statusCode, errors.New(errMsg)
 			}
+			if statusCode == 401 {
+				config.DeepfenceKey, err = getApiAccessToken(config)
+				if err != nil {
+					logrus.Error(err.Error())
+				}
+			}
 			resp.Body.Close()
 			retryCount += 1
 			time.Sleep(5 * time.Second)

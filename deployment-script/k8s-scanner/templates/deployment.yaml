@@ -17,10 +17,10 @@ spec:
           image: deepfenceio/k8s-scanner:latest
           imagePullPolicy: Always
           args:
-            - -mgmt-console-url="{{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}"
-            - -mgmt-console-port="{{ required "managementConsolePort is required" .Values.managementConsolePort }}"
-            - -deepfence-key=2436a087-1925-4030-aa53-c28f73f858f4
-            - -node-id="{{ required "clusterName is required" .Values.clusterName }}"
+            - -mgmt-console-url={{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}
+            - -mgmt-console-port={{ required "managementConsolePort is required" .Values.managementConsolePort }}
+            - -deepfence-key={{ required "deepfenceKey is required" .Values.deepfenceKey }}
+            - -node-id={{ required "clusterName is required" .Values.clusterName }}
             - -debug=true
           securityContext:
             privileged: true
