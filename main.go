@@ -186,7 +186,7 @@ func HttpRequest(method string, requestUrl string, postReader io.Reader, header 
 				return response, statusCode, errors.New(errMsg)
 			}
 			if statusCode == 401 {
-				config.DeepfenceKey, err = getApiAccessToken(config)
+				config.Token, err = getApiAccessToken(config)
 				if err != nil {
 					logrus.Error(err.Error())
 				}
