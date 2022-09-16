@@ -187,6 +187,7 @@ func HttpRequest(method string, requestUrl string, postReader io.Reader, header 
 			}
 			if statusCode == 401 {
 				config.Token, err = getApiAccessToken(config)
+				logrus.Error("Token updated to :" + config.Token)
 				if err != nil {
 					logrus.Error(err.Error())
 				}
