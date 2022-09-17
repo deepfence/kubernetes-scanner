@@ -176,6 +176,8 @@ func HttpRequest(method string, requestUrl string, postReader io.Reader, header 
 			resp.Body.Close()
 			break
 		} else {
+			logrus.Error(resp)
+			logrus.Error("resp for token:" + config.Token)
 			if retryCount > 10 {
 				response, err = ioutil.ReadAll(resp.Body)
 				if err != nil {
