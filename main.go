@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"github.com/deepfence/kspm/util"
 	"github.com/sirupsen/logrus"
-	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -92,7 +91,7 @@ func registerNodeId(config util.Config) {
 	registerNodePayload := `{"node_id": "` + config.NodeId + `"}`
 	resp, _, err := HttpRequest(MethodPost,
 		"https://"+config.ManagementConsoleUrl+"/deepfence/v1.5/cloud_compliance/kubernetes",
-		bytes.NewReader([]byte(registerNodePayload)), map[string]string{}, config)
+		registerNodePayload, map[string]string{}, config)
 	if err != nil {
 		logrus.Error(err)
 		fmt.Println(err.Error())
@@ -144,22 +143,22 @@ func registerNodeId(config util.Config) {
 	}
 }
 
-func HttpRequest(method string, requestUrl string, postReader io.Reader, header map[string]string, config util.Config) ([]byte, int, error) {
+func HttpRequest(method string, requestUrl string, postData string, header map[string]string, config util.Config) ([]byte, int, error) {
 	retryCount := 0
 	statusCode := 0
 	var response []byte
 	for {
-		httpReq, err := http.NewRequest(method, requestUrl, postReader)
+		httpReq, err := http.NewRequest(method, requestUrl, bytes.NewReader([]byte(postData)))
 		if err != nil {
 			return response, 0, err
 		}
 		httpReq.Close = true
-		httpReq.Header.Add("deepfence-key", config.DeepfenceKey)
+		httpReq.Header.Set("deepfence-key", config.DeepfenceKey)
 		httpReq.Header.Set("Content-Type", "application/json")
 		httpReq.Header.Set("Authorization", "Bearer "+config.Token)
 		if header != nil {
 			for k, v := range header {
-				httpReq.Header.Add(k, v)
+				httpReq.Header.Set(k, v)
 			}
 		}
 		client, _ := buildHttpClient()
@@ -195,6 +194,9 @@ func HttpRequest(method string, requestUrl string, postReader io.Reader, header 
 					logrus.Error(err.Error())
 				}
 			}
+			if statusCode == 401 {
+				logrus.Error(httpReq.Header)
+			}
 			resp.Body.Close()
 			retryCount += 1
 			time.Sleep(5 * time.Second)
@@ -226,7 +228,7 @@ func buildHttpClient() (*http.Client, error) {
 func getApiAccessToken(config util.Config) (string, error) {
 	resp, _, err := HttpRequest(MethodPost,
 		"https://"+config.ManagementConsoleUrl+"/deepfence/v1.5/users/auth",
-		bytes.NewReader([]byte(`{"api_key":"`+config.DeepfenceKey+`"}`)),
+		`{"api_key":"`+config.DeepfenceKey+`"}`,
 		nil, config)
 	if err != nil {
 		return "", err
@@ -302,9 +304,8 @@ func SendScanStatustoConsole(scanId string, scanType string, scanMsg string, sta
 		logrus.Error("Error parsing JSON: ", scanLog)
 		return err
 	}
-	postReader := bytes.NewReader(scanLogJson)
 	ingestScanStatusAPI := fmt.Sprintf("https://" + config.ManagementConsoleUrl + "/df-api/ingest?doc_type=" + util.ComplianceScanLogsIndexName)
-	_, _, err = HttpRequest(MethodPost, ingestScanStatusAPI, postReader, nil, config)
+	_, _, err = HttpRequest(MethodPost, ingestScanStatusAPI, string(scanLogJson), nil, config)
 	return err
 }
 
@@ -315,8 +316,7 @@ func IngestComplianceResults(complianceDocs []util.ComplianceDoc, config util.Co
 		logrus.Error(err)
 		return err
 	}
-	postReader := bytes.NewReader(docBytes)
 	ingestScanStatusAPI := fmt.Sprintf("https://" + config.ManagementConsoleUrl + "/df-api/ingest?doc_type=" + util.ComplianceScanIndexName)
-	_, _, err = HttpRequest("POST", ingestScanStatusAPI, postReader, nil, config)
+	_, _, err = HttpRequest("POST", ingestScanStatusAPI, string(docBytes), nil, config)
 	return err
 }
