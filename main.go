@@ -92,8 +92,7 @@ func registerNodeId(config util.Config) {
 	registerNodePayload := `{"node_id": "` + config.NodeId + `"}`
 	resp, _, err := HttpRequest(MethodPost,
 		"https://"+config.ManagementConsoleUrl+"/deepfence/v1.5/cloud_compliance/kubernetes",
-		bytes.NewReader([]byte(registerNodePayload)),
-		map[string]string{"Authorization": "Bearer " + config.Token}, config)
+		bytes.NewReader([]byte(registerNodePayload)), map[string]string{}, config)
 	if err != nil {
 		logrus.Error(err)
 		fmt.Println(err.Error())
@@ -157,6 +156,7 @@ func HttpRequest(method string, requestUrl string, postReader io.Reader, header 
 		httpReq.Close = true
 		httpReq.Header.Add("deepfence-key", config.DeepfenceKey)
 		httpReq.Header.Set("Content-Type", "application/json")
+		httpReq.Header.Set("Authorization", "Bearer "+config.Token)
 		if header != nil {
 			for k, v := range header {
 				httpReq.Header.Add(k, v)
