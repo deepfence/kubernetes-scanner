@@ -1,9 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -11,8 +8,6 @@ import (
 	"github.com/deepfence/kspm/util"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
-	"net"
-	"net/http"
 	"os"
 	"os/exec"
 	"path"
@@ -69,7 +64,7 @@ func main() {
 		HttpServerRequired:    false,
 		NodeId:                *nodeId,
 	}
-	config.Token, _ = getApiAccessToken(config)
+	config.Token, _ = util.GetApiAccessToken(config)
 	logrus.Debug("Token generated success:{}", config.Token)
 	fmt.Println("Token generated success:{}", config.Token)
 	runServices(config)
@@ -89,7 +84,7 @@ func registerNodeId(config util.Config) {
 	logrus.Error(config.NodeId)
 	logrus.Error(config)
 	registerNodePayload := `{"node_id": "` + config.NodeId + `"}`
-	resp, _, err := HttpRequest(MethodPost,
+	resp, _, err := util.HttpRequest(MethodPost,
 		"https://"+config.ManagementConsoleUrl+"/deepfence/v1.5/cloud_compliance/kubernetes",
 		registerNodePayload, map[string]string{}, config)
 	if err != nil {
@@ -143,118 +138,6 @@ func registerNodeId(config util.Config) {
 	}
 }
 
-func HttpRequest(method string, requestUrl string, postData string, header map[string]string, config util.Config) ([]byte, int, error) {
-	retryCount := 0
-	statusCode := 0
-	var response []byte
-	for {
-		httpReq, err := http.NewRequest(method, requestUrl, bytes.NewReader([]byte(postData)))
-		if err != nil {
-			return response, 0, err
-		}
-		httpReq.Close = true
-		httpReq.Header.Set("deepfence-key", config.DeepfenceKey)
-		httpReq.Header.Set("Content-Type", "application/json")
-		httpReq.Header.Set("Authorization", "Bearer "+config.Token)
-		if header != nil {
-			for k, v := range header {
-				httpReq.Header.Set(k, v)
-			}
-		}
-		client, _ := buildHttpClient()
-		resp, err := client.Do(httpReq)
-		if err != nil {
-			return response, 0, err
-		}
-		statusCode = resp.StatusCode
-		if statusCode == 200 {
-			response, err = ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return response, statusCode, err
-			}
-			resp.Body.Close()
-			break
-		} else {
-			a, err := ioutil.ReadAll(resp.Body)
-			logrus.Error(string(a))
-			logrus.Error("resp for token:" + config.Token)
-			if retryCount > 10 {
-				response, err = ioutil.ReadAll(resp.Body)
-				if err != nil {
-					logrus.Error(err)
-				}
-				errMsg := fmt.Sprintf("Unable to complete request on %s. Got %d - %s", requestUrl, resp.StatusCode, response)
-				resp.Body.Close()
-				return response, statusCode, errors.New(errMsg)
-			}
-			if statusCode == 401 {
-				config.Token, err = getApiAccessToken(config)
-				logrus.Error("Token updated to :" + config.Token)
-				if err != nil {
-					logrus.Error(err.Error())
-				}
-			}
-			if statusCode == 401 {
-				logrus.Error(httpReq.Header)
-			}
-			resp.Body.Close()
-			retryCount += 1
-			time.Sleep(5 * time.Second)
-		}
-	}
-	return response, statusCode, nil
-}
-
-func buildHttpClient() (*http.Client, error) {
-	// Set up our own certificate pool
-	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig:     tlsConfig,
-			DisableKeepAlives:   false,
-			MaxIdleConnsPerHost: 1024,
-			DialContext: (&net.Dialer{
-				Timeout:   15 * time.Minute,
-				KeepAlive: 15 * time.Minute,
-			}).DialContext,
-			TLSHandshakeTimeout:   30 * time.Second,
-			ResponseHeaderTimeout: 5 * time.Minute,
-		},
-		Timeout: 15 * time.Minute,
-	}
-	return client, nil
-}
-
-func getApiAccessToken(config util.Config) (string, error) {
-	resp, _, err := HttpRequest(MethodPost,
-		"https://"+config.ManagementConsoleUrl+"/deepfence/v1.5/users/auth",
-		`{"api_key":"`+config.DeepfenceKey+`"}`,
-		nil, config)
-	if err != nil {
-		return "", err
-	}
-	var dfApiAuthResponse dfApiAuthResponse
-	err = json.Unmarshal(resp, &dfApiAuthResponse)
-	if err != nil {
-		return "", err
-	}
-	if !dfApiAuthResponse.Success {
-		return "", errors.New(dfApiAuthResponse.Error.Message)
-	}
-	return dfApiAuthResponse.Data.AccessToken, nil
-}
-
-type dfApiAuthResponse struct {
-	Data struct {
-		AccessToken  string `json:"access_token"`
-		RefreshToken string `json:"refresh_token"`
-	} `json:"data"`
-	Error struct {
-		Message string `json:"message"`
-	} `json:"error"`
-	Success bool `json:"success"`
-}
-
 func RunComplianceScan() (util.ComplianceGroup, error) {
 	tempFileName := fmt.Sprintf("/tmp/%s.json", util.RandomString(12))
 	//defer os.Remove(tempFileName)
@@ -305,7 +188,7 @@ func SendScanStatustoConsole(scanId string, scanType string, scanMsg string, sta
 		return err
 	}
 	ingestScanStatusAPI := fmt.Sprintf("https://" + config.ManagementConsoleUrl + "/df-api/ingest?doc_type=" + util.ComplianceScanLogsIndexName)
-	_, _, err = HttpRequest(MethodPost, ingestScanStatusAPI, string(scanLogJson), nil, config)
+	_, _, err = util.HttpRequest(MethodPost, ingestScanStatusAPI, string(scanLogJson), nil, config)
 	return err
 }
 
@@ -317,6 +200,6 @@ func IngestComplianceResults(complianceDocs []util.ComplianceDoc, config util.Co
 		return err
 	}
 	ingestScanStatusAPI := fmt.Sprintf("https://" + config.ManagementConsoleUrl + "/df-api/ingest?doc_type=" + util.ComplianceScanIndexName)
-	_, _, err = HttpRequest("POST", ingestScanStatusAPI, string(docBytes), nil, config)
+	_, _, err = util.HttpRequest("POST", ingestScanStatusAPI, string(docBytes), nil, config)
 	return err
 }
