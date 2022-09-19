@@ -10,7 +10,7 @@ import (
 func parseControlResult(complianceDocs *[]util.ComplianceDoc, complianceSummary *map[string]map[string]struct{}, group util.ComplianceGroup, control util.ComplianceControl, result util.ComplianceControlResult, config util.Config) {
 
 	docId := fmt.Sprintf("%x", md5.Sum([]byte(config.ScanId+control.ControlID+
-		result.Resource+group.Title)))
+		result.Resource+result.Reason)))
 	(*complianceSummary)[result.Status][docId] = struct{}{}
 	prefix := "kubernetes"
 	service := strings.TrimPrefix(control.Tags.Service, prefix)
@@ -24,7 +24,7 @@ func parseControlResult(complianceDocs *[]util.ComplianceDoc, complianceSummary 
 		Group:                 group.Title,
 		TestCategory:          service,
 		TestInfo:              control.Title,
-		ComplianceCheckType:   "hipaa",
+		ComplianceCheckType:   "cis",
 		NodeType:              "kubernetes",
 		NodeName:              config.NodeId,
 		NodeId:                config.NodeId,

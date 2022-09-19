@@ -25,8 +25,11 @@ RUN chown deepfence /opt/steampipe
 RUN chown deepfence /usr/local/bin/kspm
 COPY kubeconfig /home/deepfence/.kube/config
 COPY token.sh /home/deepfence/token.sh
+RUN chmod 777 /home/deepfence/.kube
+RUN chmod 777 /home/deepfence/.kube/config
 RUN chown deepfence /home/deepfence/.kube/config 
 RUN chown deepfence /home/deepfence/token.sh
+RUN apt-get install -y nano
 
 USER deepfence
 RUN steampipe plugin install steampipe \
