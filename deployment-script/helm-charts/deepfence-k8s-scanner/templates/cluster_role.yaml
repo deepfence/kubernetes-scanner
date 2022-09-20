@@ -1,8 +1,9 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: superreader
-  namespace: deepfence
+  name: k8s-scanner-cluster-role
+  labels:
+    {{- include "deepfence-k8s-scanner.labels" . | nindent 4 }}
 rules:
   - apiGroups:
       - ''

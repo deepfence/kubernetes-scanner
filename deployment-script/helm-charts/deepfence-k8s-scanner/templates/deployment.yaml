@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepfence-k8s-scanner
+  namespace: {{ .Release.Namespace }}
+  labels:
+  {{- include "deepfence-k8s-scanner.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      {{- include "deepfence-k8s-scanner.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "deepfence-k8s-scanner.selectorLabels" . | nindent 6 }}
+    spec:
+      containers:
+        - name: deepfence-k8s-scanner
+          image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - -mgmt-console-url={{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}
+            - -mgmt-console-port={{ required "managementConsolePort is required" .Values.managementConsolePort }}
+            - -deepfence-key={{ required "deepfenceKey is required" .Values.deepfenceKey }}
+            - -node-id={{ required "clusterName is required" .Values.clusterName }}
+            - -debug={{ .Values.debug }}
+          securityContext:
+            privileged: true
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      imagePullSecrets:
+      - name: {{ .Values.image.pullSecretName }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
