@@ -34,9 +34,14 @@ spec:
           args:
           - -mgmt-console-url={{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}
           - -mgmt-console-port={{ required "managementConsolePort is required" .Values.managementConsolePort }}
-          - -deepfence-key={{ required "deepfenceKey is required" .Values.deepfenceKey }}
           - -node-id={{ required "clusterName is required" .Values.clusterName }}
           - -debug={{ .Values.debug }}
+          env:
+          - name: DEEPFENCE_KEY
+            valueFrom:
+              secretKeyRef:
+                name: "deepfence-key"
+                key: "deepfence-key"
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

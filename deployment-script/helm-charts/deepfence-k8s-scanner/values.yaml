@@ -8,6 +8,7 @@ managementConsolePort: 443
 
 # Auth: Get deepfence api key from UI -> Settings -> User Management
 deepfenceKey: ""
+createDeepfenceKeySecret: true
 
 # Set custom name for the cluster and hostname prefix for agent vm's to easily identify in Deepfence UI.
 # Example: prod-cluster or dev1-cluster
