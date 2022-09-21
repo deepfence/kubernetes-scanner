@@ -21,7 +21,7 @@ var (
 	quiet                 = flag.Bool("quiet", false, "Don't display any output in stdout")
 	managementConsoleUrl  = flag.String("mgmt-console-url", "", "Deepfence Management Console URL")
 	managementConsolePort = flag.Int("mgmt-console-port", 443, "Deepfence Management Console Port")
-	deepfenceKey          = flag.String("deepfence-key", "", "Deepfence key for auth")
+	deepfenceKey          = os.Getenv("DEEPFENCE_KEY")
 	nodeId                = flag.String("node-id", "", "node-id of the cluster it is deployed in")
 	debug                 = flag.Bool("debug", false, "set log level to debug")
 )
@@ -81,18 +81,13 @@ func runServices(config util.Config) {
 }
 
 func registerNodeId(config util.Config) {
-	logrus.Error(config.NodeId)
-	logrus.Error(config)
-	registerNodePayload := `{"node_id": "` + config.NodeId + `"}`
+	registerNodePayload := `{"node_id": "` + config.NodeId + `", "node_name": "` + config.NodeId + `"}`
 	resp, _, err := util.HttpRequest(MethodPost,
 		"https://"+config.ManagementConsoleUrl+"/deepfence/v1.5/cloud_compliance/kubernetes",
 		registerNodePayload, map[string]string{}, config)
 	if err != nil {
 		logrus.Error(err)
-		fmt.Println(err.Error())
 	}
-	//fmt.Println(string(resp))
-	logrus.Error(string(resp))
 	var scansResponse util.ScansResponse
 	err = json.Unmarshal(resp, &scansResponse)
 	if err != nil {
