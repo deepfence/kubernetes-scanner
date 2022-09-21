@@ -10,8 +10,8 @@ helm repo add deepfence-k8s-scanner https://deepfence-helm-charts.s3.amazonaws.c
 
 ```bash
 helm install deepfence-k8s-scanner deepfence-k8s-scanner/deepfence-k8s-scanner \
-    --set managementConsoleUrl=40.40.40.40 \
-    --set deepfenceKey="" \
+    --set managementConsoleUrl="40.40.40.40" \
+    --set deepfenceKey="xxxxx" \
     --set clusterName="prod-cluster" \
     --namespace deepfence-k8s-scanner \
     --create-namespace
