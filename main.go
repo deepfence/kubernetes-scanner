@@ -60,7 +60,7 @@ func main() {
 		Quiet:                 *quiet,
 		ManagementConsoleUrl:  *managementConsoleUrl,
 		ManagementConsolePort: strconv.Itoa(*managementConsolePort),
-		DeepfenceKey:          *deepfenceKey,
+		DeepfenceKey:          deepfenceKey,
 		HttpServerRequired:    false,
 		NodeId:                *nodeId,
 	}
