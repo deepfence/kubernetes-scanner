@@ -1,0 +1,4 @@
+
+deepfence-k8s-scanner
+-----
+kubectl get --namespace {{ .Release.Namespace }} pods

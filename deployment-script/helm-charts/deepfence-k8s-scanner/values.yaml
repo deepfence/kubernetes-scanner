@@ -1,3 +1,7 @@
+# Default values for deepfence-k8s-scanner.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
 # Management Console URL. Example: 22.33.44.55, deepfence.customer.com
 managementConsoleUrl: ""
 managementConsolePort: 443
@@ -10,21 +14,23 @@ deepfenceKey: ""
 # It will be suffixed with hostname - prod-cluster-aks-agentpool-123456-vmss000001
 clusterName: ""
 
-registry:
-  name: "https://index.docker.io/v1/"
-  # Set docker hub username and password provided by Deepfence
-  # This will create a secret called "deepfence-docker-secret"
-  username: ""
-  password: ""
-  # If kubernetes secret is already defined externally, change following value to false
-  # https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-  createRegistrySecret: true
-
 image:
-  name: deepfenceio/k8s-scanner
-  tag: 1.0.0
+  repository: "deepfenceio/k8s-scanner"
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "1.0.0"
   pullPolicy: Always
-  pullSecretName: k8s-scanner-registry-secret
+
+debug: true
+replicaCount: 1
+
+imagePullSecrets: []
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
 
 resources:
   requests:
@@ -34,21 +40,19 @@ resources:
     cpu: 1000m
     memory: 1Gi
 
-debug: true
-
 nodeSelector: {"kubernetes.io/os": "linux"}
 
-tolerations:
-- operator: "Exists"
-  effect: "NoSchedule"
-- operator: "Exists"
-  effect: "NoExecute"
+tolerations: []
 
 affinity: {}
 
 serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
   # Annotations to add to the service account
   annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
   name: "deepfence-k8s-scanner"
 
 nameOverride: ""

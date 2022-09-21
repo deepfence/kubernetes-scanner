@@ -13,6 +13,6 @@ helm install deepfence-k8s-scanner deepfence-k8s-scanner/deepfence-k8s-scanner \
     --set managementConsoleUrl=40.40.40.40 \
     --set deepfenceKey="" \
     --set clusterName="prod-cluster" \
-    --namespace deepfence \
+    --namespace deepfence-k8s-scanner \
     --create-namespace
 ```

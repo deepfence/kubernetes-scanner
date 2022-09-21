@@ -1,46 +1,53 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deepfence-k8s-scanner
-  namespace: {{ .Release.Namespace }}
+  name: {{ include "deepfence-k8s-scanner.fullname" . }}
   labels:
-  {{- include "deepfence-k8s-scanner.labels" . | nindent 4 }}
+    {{- include "deepfence-k8s-scanner.labels" . | nindent 4 }}
 spec:
-  replicas: 1
-  revisionHistoryLimit: 2
-  strategy:
-    type: RollingUpdate
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       {{- include "deepfence-k8s-scanner.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
-        {{- include "deepfence-k8s-scanner.selectorLabels" . | nindent 6 }}
+        {{- include "deepfence-k8s-scanner.selectorLabels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "deepfence-k8s-scanner.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: deepfence-k8s-scanner
-          image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
-            - -mgmt-console-url={{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}
-            - -mgmt-console-port={{ required "managementConsolePort is required" .Values.managementConsolePort }}
-            - -deepfence-key={{ required "deepfenceKey is required" .Values.deepfenceKey }}
-            - -node-id={{ required "clusterName is required" .Values.clusterName }}
-            - -debug={{ .Values.debug }}
-          securityContext:
-            privileged: true
+          - -mgmt-console-url={{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}
+          - -mgmt-console-port={{ required "managementConsolePort is required" .Values.managementConsolePort }}
+          - -deepfence-key={{ required "deepfenceKey is required" .Values.deepfenceKey }}
+          - -node-id={{ required "clusterName is required" .Values.clusterName }}
+          - -debug={{ .Values.debug }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      serviceAccountName: {{ .Values.serviceAccount.name }}
-      imagePullSecrets:
-      - name: {{ .Values.image.pullSecretName }}
-
       {{- with .Values.nodeSelector }}
       nodeSelector:
-      {{- toYaml . | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.tolerations }}
       tolerations:
-      {{- toYaml . | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}

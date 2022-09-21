@@ -2,10 +2,10 @@ FROM golang:1.18-bullseye AS build
 
 WORKDIR /home/deepfence/src/kspm
 COPY . .
-RUN go build -o kspm .
-RUN chmod 777 kspm
-RUN cp /home/deepfence/src/kspm/kspm /home/deepfence/
-RUN rm -r /home/deepfence/src/*
+RUN go build -o kspm . \
+    && chmod 777 kspm \
+    && cp /home/deepfence/src/kspm/kspm /home/deepfence/ \
+    && rm -r /home/deepfence/src/*
 
 FROM debian:bullseye-slim
 MAINTAINER Deepfence Inc
@@ -13,26 +13,24 @@ LABEL deepfence.role=system
 
 RUN apt-get update \
     && apt-get install -y bash curl wget git \
-    && /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh)"
+    && /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh)" \
+    && useradd -rm -d /home/deepfence -s /bin/bash -g root -G sudo -u 1001 deepfence \
 
-RUN useradd -rm -d /home/deepfence -s /bin/bash -g root -G sudo -u 1001 deepfence
 USER deepfence
 
 COPY --from=build /home/deepfence/kspm /usr/local/bin/kspm
 WORKDIR /opt/steampipe
+
 USER root
-RUN chown deepfence /opt/steampipe
-RUN chown deepfence /usr/local/bin/kspm
 COPY kubeconfig /home/deepfence/.kube/config
 COPY token.sh /home/deepfence/token.sh
-RUN chmod 777 /home/deepfence/.kube
-RUN chmod 777 /home/deepfence/.kube/config
-RUN chown deepfence /home/deepfence/.kube/config 
-RUN chown deepfence /home/deepfence/token.sh
-RUN apt-get install -y nano
+
+RUN chown deepfence /opt/steampipe /usr/local/bin/kspm /home/deepfence/.kube/config /home/deepfence/token.sh \
+    && chmod 777 /home/deepfence/.kube /home/deepfence/.kube/config
 
 USER deepfence
-RUN steampipe plugin install steampipe \
+RUN apt-get install -y nano \
+    && steampipe plugin install steampipe \
     && steampipe plugin install kubernetes \
     && git clone https://github.com/turbot/steampipe-mod-kubernetes-compliance.git
 
