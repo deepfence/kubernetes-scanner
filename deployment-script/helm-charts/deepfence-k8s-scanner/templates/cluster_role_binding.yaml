@@ -4,6 +4,7 @@ metadata:
   name: deepfence-k8s-scanner
   labels:
     {{- include "deepfence-k8s-scanner.labels" . | nindent 4 }}
+  namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
   name: deepfence-k8s-scanner

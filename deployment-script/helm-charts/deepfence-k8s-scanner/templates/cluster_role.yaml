@@ -1,9 +1,10 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: k8s-scanner-cluster-role
+  name: deepfence-k8s-scanner
   labels:
     {{- include "deepfence-k8s-scanner.labels" . | nindent 4 }}
+  namespace: {{ .Release.Namespace }}
 rules:
   - apiGroups:
       - ''
