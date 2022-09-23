@@ -125,7 +125,7 @@ type dfApiAuthResponse struct {
 
 func GetKubernetesClusterId() string {
 	var kubeSystemNamespaceUid string
-	serviceHost := "https://kubernetes.default.svc"
+	serviceHost := "kubernetes.default.svc"
 	// servicePort := "443"
 	caCertPool := x509.NewCertPool()
 	caCert, caToken, err := getK8sCaCert()
@@ -155,6 +155,8 @@ func GetKubernetesClusterId() string {
 					}
 				}
 			}
+		} else {
+			logrus.Error(err.Error())
 		}
 	} else {
 		logrus.Error(err.Error())
