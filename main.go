@@ -56,6 +56,9 @@ func main() {
 		logrus.SetLevel(logrus.InfoLevel)
 	}
 	nodeId := util.GetKubernetesClusterId()
+	if nodeId == "" {
+		nodeId = *nodeName
+	}
 	logrus.Error("kube id:" + nodeId)
 	config := util.Config{
 		Quiet:                 *quiet,
@@ -64,7 +67,7 @@ func main() {
 		DeepfenceKey:          deepfenceKey,
 		HttpServerRequired:    false,
 		NodeName:              *nodeName,
-		NodeId:                nodeId == ""? *nodeName: nodeId,
+		NodeId:                nodeId,
 	}
 	config.Token, _ = util.GetApiAccessToken(config)
 	runServices(config)
