@@ -130,7 +130,7 @@ func GetKubernetesClusterId() string {
 	caCertPool := x509.NewCertPool()
 	caCert, caToken, err := getK8sCaCert()
 	if err != nil {
-		logrus.Error(err.Error())
+		logrus.Error("Error in reading certs:" + err.Error())
 		return ""
 	}
 	caCertPool.AppendCertsFromPEM(caCert)

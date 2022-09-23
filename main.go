@@ -55,7 +55,8 @@ func main() {
 	} else {
 		logrus.SetLevel(logrus.InfoLevel)
 	}
-
+	nodeId := util.GetKubernetesClusterId()
+	logrus.Error("kube id:" + nodeId)
 	config := util.Config{
 		Quiet:                 *quiet,
 		ManagementConsoleUrl:  *managementConsoleUrl,
@@ -63,7 +64,7 @@ func main() {
 		DeepfenceKey:          deepfenceKey,
 		HttpServerRequired:    false,
 		NodeName:              *nodeName,
-		NodeId:                util.GetKubernetesClusterId(),
+		NodeId:                nodeId == ""? *nodeName: nodeId,
 	}
 	config.Token, _ = util.GetApiAccessToken(config)
 	runServices(config)
@@ -80,7 +81,7 @@ func runServices(config util.Config) {
 }
 
 func registerNodeId(config util.Config) {
-	registerNodePayload := `{"node_id": "` + config.NodeId + `", "node_name": "` + config.NodeId + `"}`
+	registerNodePayload := `{"node_id": "` + config.NodeId + `", "node_name": "` + config.NodeName + `"}`
 	resp, _, err := util.HttpRequest(MethodPost,
 		"https://"+config.ManagementConsoleUrl+"/deepfence/v1.5/cloud_compliance/kubernetes",
 		registerNodePayload, map[string]string{}, config)
