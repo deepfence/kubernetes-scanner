@@ -1,15 +1,7 @@
 package util
 
 const (
-	CloudProviderAWS            = "aws"
-	CloudProviderGCP            = "gcp"
-	CloudProviderAzure          = "azure"
-	ModeLocal                   = "local"
-	ModeService                 = "service"
-	JsonOutput                  = "json"
-	TableOutput                 = "table"
-	NodeTypeCloudProvider       = "cloud_provider"
-	NodeTypeCloudAccount        = "cloud_account"
+	NsaCisaCheckType            = "nsa-cisa"
 	charset                     = "abcdefghijklmnopqrstuvwxyz" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	ComplianceScanIndexName     = "compliance"
 	ComplianceScanLogsIndexName = "compliance-scan-logs"

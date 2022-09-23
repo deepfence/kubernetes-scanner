@@ -101,14 +101,14 @@ func registerNodeId(config util.Config) {
 	for scanId, scanDetails := range scansResponse.Data.Scans {
 		if _, ok := pendingScans[scanId]; !ok {
 			pendingScans[scanId] = scanDetails
-			err := SendScanStatustoConsole(scanId, "nsa-cisa", "", "INPROGRESS", nil, config)
+			err := SendScanStatustoConsole(scanId, util.NsaCisaCheckType, "", "INPROGRESS", nil, config)
 
 			if err != nil {
 				logrus.Error(err)
 			}
 			scanResult, err := RunComplianceScan()
 			if err != nil {
-				err = SendScanStatustoConsole(scanId, "nsa-cisa", err.Error(), "ERROR", nil, config)
+				err = SendScanStatustoConsole(scanId, util.NsaCisaCheckType, err.Error(), "ERROR", nil, config)
 				continue
 			}
 			config.ScanId = scanId
@@ -126,7 +126,7 @@ func registerNodeId(config util.Config) {
 				"result":       complianceSummary,
 				"total_checks": complianceSummary.Alarm + complianceSummary.Ok + complianceSummary.Info + complianceSummary.Skip + complianceSummary.Error,
 			}
-			err = SendScanStatustoConsole(config.ScanId, "nsa-cisa", "", "COMPLETED", extras, config)
+			err = SendScanStatustoConsole(config.ScanId, util.NsaCisaCheckType, "", "COMPLETED", extras, config)
 			if err != nil {
 				logrus.Error(err)
 			}

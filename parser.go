@@ -24,7 +24,7 @@ func parseControlResult(complianceDocs *[]util.ComplianceDoc, complianceSummary 
 		Group:                 group.Title,
 		TestCategory:          service,
 		TestInfo:              control.Title,
-		ComplianceCheckType:   "nsa-cisa",
+		ComplianceCheckType:   util.NsaCisaCheckType,
 		NodeType:              "kubernetes",
 		NodeName:              config.NodeName,
 		NodeId:                config.NodeId,
