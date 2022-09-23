@@ -126,7 +126,7 @@ type dfApiAuthResponse struct {
 func GetKubernetesClusterId() string {
 	var kubeSystemNamespaceUid string
 	serviceHost := "https://kubernetes.default.svc"
-	servicePort := "443"
+	// servicePort := "443"
 	caCertPool := x509.NewCertPool()
 	caCert, caToken, err := getK8sCaCert()
 	if err != nil {
@@ -136,7 +136,7 @@ func GetKubernetesClusterId() string {
 	client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{RootCAs: caCertPool}}}
 
 	// Get kubeSystemNamespaceUid
-	url := fmt.Sprintf("https://%s:%s/api/v1/namespaces/kube-system", serviceHost, servicePort)
+	url := fmt.Sprintf("https://%s/api/v1/namespaces/kube-system", serviceHost)
 	req, err := http.NewRequest(http.MethodGet, url, bytes.NewBuffer([]byte{}))
 	if err == nil {
 		req.Header.Add("Content-Type", "application/json")
@@ -155,6 +155,8 @@ func GetKubernetesClusterId() string {
 				}
 			}
 		}
+	} else {
+		logrus.Error(err.Error())
 	}
 	return kubeSystemNamespaceUid
 }
