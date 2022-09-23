@@ -22,7 +22,7 @@ var (
 	managementConsoleUrl  = flag.String("mgmt-console-url", "", "Deepfence Management Console URL")
 	managementConsolePort = flag.Int("mgmt-console-port", 443, "Deepfence Management Console Port")
 	deepfenceKey          = os.Getenv("DEEPFENCE_KEY")
-	nodeId                = flag.String("node-id", "", "node-id of the cluster it is deployed in")
+	nodeName              = flag.String("node-name", "", "node-name of the cluster it is deployed in")
 	debug                 = flag.Bool("debug", false, "set log level to debug")
 )
 
@@ -55,18 +55,20 @@ func main() {
 	} else {
 		logrus.SetLevel(logrus.InfoLevel)
 	}
-
+	nodeId := util.GetKubernetesClusterId()
+	if nodeId == "" {
+		nodeId = *nodeName
+	}
 	config := util.Config{
 		Quiet:                 *quiet,
 		ManagementConsoleUrl:  *managementConsoleUrl,
 		ManagementConsolePort: strconv.Itoa(*managementConsolePort),
 		DeepfenceKey:          deepfenceKey,
 		HttpServerRequired:    false,
-		NodeId:                *nodeId,
+		NodeName:              *nodeName,
+		NodeId:                nodeId,
 	}
 	config.Token, _ = util.GetApiAccessToken(config)
-	logrus.Debug("Token generated success:{}", config.Token)
-	fmt.Println("Token generated success:{}", config.Token)
 	runServices(config)
 }
 
@@ -75,36 +77,41 @@ func runServices(config util.Config) {
 	for {
 		select {
 		case <-ticker.C:
-			registerNodeId(config)
+			err := registerNodeId(config)
+			if err != nil {
+				logrus.Error(err)
+			}
 		}
 	}
 }
 
-func registerNodeId(config util.Config) {
-	registerNodePayload := `{"node_id": "` + config.NodeId + `", "node_name": "` + config.NodeId + `"}`
+func registerNodeId(config util.Config) error {
+	registerNodePayload := `{"node_id": "` + config.NodeId + `", "node_name": "` + config.NodeName + `"}`
 	resp, _, err := util.HttpRequest(MethodPost,
 		"https://"+config.ManagementConsoleUrl+"/deepfence/v1.5/cloud_compliance/kubernetes",
 		registerNodePayload, map[string]string{}, config)
 	if err != nil {
-		logrus.Error(err)
+		return err
 	}
 	var scansResponse util.ScansResponse
 	err = json.Unmarshal(resp, &scansResponse)
 	if err != nil {
-		logrus.Error(err)
+		return err
+	} else {
+		logrus.Debug(resp)
 	}
 	pendingScans := make(map[string]util.PendingScan)
 	for scanId, scanDetails := range scansResponse.Data.Scans {
 		if _, ok := pendingScans[scanId]; !ok {
 			pendingScans[scanId] = scanDetails
-			err := SendScanStatustoConsole(scanId, "nsa-cisa", "", "INPROGRESS", nil, config)
-
+			err := SendScanStatustoConsole(scanId, util.NsaCisaCheckType, "", "INPROGRESS", nil, config)
 			if err != nil {
 				logrus.Error(err)
 			}
 			scanResult, err := RunComplianceScan()
 			if err != nil {
-				err = SendScanStatustoConsole(scanId, "nsa-cisa", err.Error(), "ERROR", nil, config)
+				err = SendScanStatustoConsole(scanId, util.NsaCisaCheckType, err.Error(), "ERROR", nil, config)
+				logrus.Error(err)
 				continue
 			}
 			config.ScanId = scanId
@@ -112,25 +119,23 @@ func registerNodeId(config util.Config) {
 			//logrus.Error("scanResult:")
 			//logrus.Error(string(b))
 			complianceDocs, complianceSummary, err := ParseComplianceResults(scanResult, config)
-			fmt.Println("Parsed Compliance Docs:")
-			b, _ := json.Marshal(complianceDocs)
-			fmt.Println(string(b))
 			err = IngestComplianceResults(complianceDocs, config)
 			if err != nil {
 				logrus.Error(err)
 			}
 			extras := map[string]interface{}{
-				"node_name":    config.NodeId,
+				"node_name":    config.NodeName,
 				"node_id":      config.NodeId,
 				"result":       complianceSummary,
 				"total_checks": complianceSummary.Alarm + complianceSummary.Ok + complianceSummary.Info + complianceSummary.Skip + complianceSummary.Error,
 			}
-			err = SendScanStatustoConsole(config.ScanId, "nsa-cisa", "", "COMPLETED", extras, config)
+			err = SendScanStatustoConsole(config.ScanId, util.NsaCisaCheckType, "", "COMPLETED", extras, config)
 			if err != nil {
 				logrus.Error(err)
 			}
 		}
 	}
+	return nil
 }
 
 func RunComplianceScan() (util.ComplianceGroup, error) {
@@ -168,9 +173,9 @@ func SendScanStatustoConsole(scanId string, scanType string, scanMsg string, sta
 		"scan_status":             status,
 		"masked":                  "false",
 		"type":                    util.ComplianceScanLogsIndexName,
-		"node_name":               config.NodeId,
+		"node_name":               config.NodeName,
 		"node_id":                 config.NodeId,
-		"kubernetes_cluster_name": config.NodeId,
+		"kubernetes_cluster_name": config.NodeName,
 		"kubernetes_cluster_id":   config.NodeId,
 		"compliance_check_type":   scanType,
 	}
