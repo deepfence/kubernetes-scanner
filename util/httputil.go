@@ -130,6 +130,7 @@ func GetKubernetesClusterId() string {
 	caCertPool := x509.NewCertPool()
 	caCert, caToken, err := getK8sCaCert()
 	if err != nil {
+		logrus.Error(err.Error())
 		return ""
 	}
 	caCertPool.AppendCertsFromPEM(caCert)
@@ -157,6 +158,7 @@ func GetKubernetesClusterId() string {
 		}
 	} else {
 		logrus.Error(err.Error())
+		logrus.Error(err)
 	}
 	return kubeSystemNamespaceUid
 }
