@@ -22,7 +22,7 @@ var (
 	managementConsoleUrl  = flag.String("mgmt-console-url", "", "Deepfence Management Console URL")
 	managementConsolePort = flag.Int("mgmt-console-port", 443, "Deepfence Management Console Port")
 	deepfenceKey          = os.Getenv("DEEPFENCE_KEY")
-	nodeId                = flag.String("node-id", "", "node-id of the cluster it is deployed in")
+	nodeName              = flag.String("node-name", "", "node-id of the cluster it is deployed in")
 	debug                 = flag.Bool("debug", false, "set log level to debug")
 )
 
@@ -62,11 +62,10 @@ func main() {
 		ManagementConsolePort: strconv.Itoa(*managementConsolePort),
 		DeepfenceKey:          deepfenceKey,
 		HttpServerRequired:    false,
-		NodeId:                *nodeId,
+		NodeName:              *nodeName,
+		NodeId:                util.GetKubernetesClusterId(),
 	}
 	config.Token, _ = util.GetApiAccessToken(config)
-	logrus.Debug("Token generated success:{}", config.Token)
-	fmt.Println("Token generated success:{}", config.Token)
 	runServices(config)
 }
 
@@ -120,7 +119,7 @@ func registerNodeId(config util.Config) {
 				logrus.Error(err)
 			}
 			extras := map[string]interface{}{
-				"node_name":    config.NodeId,
+				"node_name":    config.NodeName,
 				"node_id":      config.NodeId,
 				"result":       complianceSummary,
 				"total_checks": complianceSummary.Alarm + complianceSummary.Ok + complianceSummary.Info + complianceSummary.Skip + complianceSummary.Error,
@@ -168,9 +167,9 @@ func SendScanStatustoConsole(scanId string, scanType string, scanMsg string, sta
 		"scan_status":             status,
 		"masked":                  "false",
 		"type":                    util.ComplianceScanLogsIndexName,
-		"node_name":               config.NodeId,
+		"node_name":               config.NodeName,
 		"node_id":                 config.NodeId,
-		"kubernetes_cluster_name": config.NodeId,
+		"kubernetes_cluster_name": config.NodeName,
 		"kubernetes_cluster_id":   config.NodeId,
 		"compliance_check_type":   scanType,
 	}

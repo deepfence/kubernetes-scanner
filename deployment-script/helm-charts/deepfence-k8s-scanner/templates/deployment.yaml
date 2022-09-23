@@ -34,7 +34,7 @@ spec:
           args:
           - -mgmt-console-url={{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}
           - -mgmt-console-port={{ required "managementConsolePort is required" .Values.managementConsolePort }}
-          - -node-id={{ required "clusterName is required" .Values.clusterName }}
+          - -node-name={{ required "clusterName is required" .Values.clusterName }}
           - -debug={{ .Values.debug }}
           env:
           - name: DEEPFENCE_KEY
