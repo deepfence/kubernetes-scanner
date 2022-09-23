@@ -160,7 +160,6 @@ func GetKubernetesClusterId() string {
 		}
 	} else {
 		logrus.Error(err.Error())
-		logrus.Error(err)
 	}
 	return kubeSystemNamespaceUid
 }

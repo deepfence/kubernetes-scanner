@@ -22,7 +22,7 @@ var (
 	managementConsoleUrl  = flag.String("mgmt-console-url", "", "Deepfence Management Console URL")
 	managementConsolePort = flag.Int("mgmt-console-port", 443, "Deepfence Management Console Port")
 	deepfenceKey          = os.Getenv("DEEPFENCE_KEY")
-	nodeName              = flag.String("node-name", "", "node-id of the cluster it is deployed in")
+	nodeName              = flag.String("node-name", "", "node-name of the cluster it is deployed in")
 	debug                 = flag.Bool("debug", false, "set log level to debug")
 )
 
@@ -59,7 +59,6 @@ func main() {
 	if nodeId == "" {
 		nodeId = *nodeName
 	}
-	logrus.Error("kube id:" + nodeId)
 	config := util.Config{
 		Quiet:                 *quiet,
 		ManagementConsoleUrl:  *managementConsoleUrl,
@@ -95,6 +94,8 @@ func registerNodeId(config util.Config) {
 	err = json.Unmarshal(resp, &scansResponse)
 	if err != nil {
 		logrus.Error(err)
+	} else {
+		logrus.Debug(scansResponse)
 	}
 	pendingScans := make(map[string]util.PendingScan)
 	for scanId, scanDetails := range scansResponse.Data.Scans {
@@ -115,9 +116,6 @@ func registerNodeId(config util.Config) {
 			//logrus.Error("scanResult:")
 			//logrus.Error(string(b))
 			complianceDocs, complianceSummary, err := ParseComplianceResults(scanResult, config)
-			fmt.Println("Parsed Compliance Docs:")
-			b, _ := json.Marshal(complianceDocs)
-			fmt.Println(string(b))
 			err = IngestComplianceResults(complianceDocs, config)
 			if err != nil {
 				logrus.Error(err)
