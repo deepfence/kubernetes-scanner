@@ -77,38 +77,41 @@ func runServices(config util.Config) {
 	for {
 		select {
 		case <-ticker.C:
-			registerNodeId(config)
+			err := registerNodeId(config)
+			if err != nil {
+				logrus.Error(err)
+			}
 		}
 	}
 }
 
-func registerNodeId(config util.Config) {
+func registerNodeId(config util.Config) error {
 	registerNodePayload := `{"node_id": "` + config.NodeId + `", "node_name": "` + config.NodeName + `"}`
 	resp, _, err := util.HttpRequest(MethodPost,
 		"https://"+config.ManagementConsoleUrl+"/deepfence/v1.5/cloud_compliance/kubernetes",
 		registerNodePayload, map[string]string{}, config)
 	if err != nil {
-		logrus.Error(err)
+		return err
 	}
 	var scansResponse util.ScansResponse
 	err = json.Unmarshal(resp, &scansResponse)
 	if err != nil {
-		logrus.Error(err)
+		return err
 	} else {
-		logrus.Debug(scansResponse)
+		logrus.Debug(resp)
 	}
 	pendingScans := make(map[string]util.PendingScan)
 	for scanId, scanDetails := range scansResponse.Data.Scans {
 		if _, ok := pendingScans[scanId]; !ok {
 			pendingScans[scanId] = scanDetails
 			err := SendScanStatustoConsole(scanId, util.NsaCisaCheckType, "", "INPROGRESS", nil, config)
-
 			if err != nil {
 				logrus.Error(err)
 			}
 			scanResult, err := RunComplianceScan()
 			if err != nil {
 				err = SendScanStatustoConsole(scanId, util.NsaCisaCheckType, err.Error(), "ERROR", nil, config)
+				logrus.Error(err)
 				continue
 			}
 			config.ScanId = scanId
@@ -132,6 +135,7 @@ func registerNodeId(config util.Config) {
 			}
 		}
 	}
+	return nil
 }
 
 func RunComplianceScan() (util.ComplianceGroup, error) {
