@@ -193,24 +193,22 @@ func SendScanStatustoConsole(scanId string, scanType string, scanMsg string, sta
 	for k, v := range extras {
 		scanLog[k] = v
 	}
-	scanLogJson, err := json.Marshal(scanLog)
-	if err != nil {
-		logrus.Error("Error parsing JSON: ", scanLog)
-		return err
-	}
-	ingestScanStatusAPI := fmt.Sprintf("https://" + config.ManagementConsoleUrl + "/df-api/ingest?doc_type=" + util.ComplianceScanLogsIndexName)
-	_, _, err = util.HttpRequest(MethodPost, ingestScanStatusAPI, string(scanLogJson), nil, config)
-	return err
+	scanLogJson := util.ToKafkaRestFormat([]map[string]interface{}{scanLog})
+	ingestScanStatusAPI := fmt.Sprintf("https://" + config.ManagementConsoleUrl + "/ingest/topics/" + util.ComplianceScanLogsIndexName)
+	return util.PublishDocument(ingestScanStatusAPI, scanLogJson, config)
 }
 
 func IngestComplianceResults(complianceDocs []util.ComplianceDoc, config util.Config) error {
 	logrus.Debugf("Number of docs to ingest: %d", len(complianceDocs))
-	docBytes, err := json.Marshal(complianceDocs)
-	if err != nil {
-		logrus.Error(err)
-		return err
+	data := make([]map[string]interface{}, len(complianceDocs))
+	for index, complianceDoc := range complianceDocs {
+		mapData, err := util.StructToMap(complianceDoc)
+		if err == nil {
+			data[index] = mapData
+		} else {
+			logrus.Error(err)
+		}
 	}
-	ingestScanStatusAPI := fmt.Sprintf("https://" + config.ManagementConsoleUrl + "/df-api/ingest?doc_type=" + util.ComplianceScanIndexName)
-	_, _, err = util.HttpRequest("POST", ingestScanStatusAPI, string(docBytes), nil, config)
-	return err
+	ingestScanStatusAPI := fmt.Sprintf("https://" + config.ManagementConsoleUrl + "/ingest/topics/" + util.ComplianceScanIndexName)
+	return util.PublishDocument(ingestScanStatusAPI, util.ToKafkaRestFormat(data), config)
 }
