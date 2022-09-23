@@ -30,7 +30,10 @@ func HttpRequest(method string, requestUrl string, postData string, header map[s
 		}
 		httpReq.Close = true
 		httpReq.Header.Set("deepfence-key", config.DeepfenceKey)
-		httpReq.Header.Set("Content-Type", "application/json")
+		_, exists := header["Content-Type"]
+		if !exists {
+			httpReq.Header.Set("Content-Type", "application/json")
+		}
 		httpReq.Header.Set("Authorization", "Bearer "+config.Token)
 		if header != nil {
 			for k, v := range header {
@@ -179,4 +182,9 @@ type k8sNamespaceDetails struct {
 		Name string `json:"name"`
 		UID  string `json:"uid"`
 	} `json:"metadata"`
+}
+
+func PublishDocument(requestUrl string, data string, config Config) error {
+	_, _, err := HttpRequest(MethodPost, requestUrl, data, map[string]string{"Content-Type": "application/vnd.kafka.json.v2+json"}, config)
+	return err
 }
