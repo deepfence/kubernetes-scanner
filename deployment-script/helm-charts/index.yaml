@@ -3,12 +3,12 @@ entries:
   deepfence-k8s-scanner:
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2022-09-22T11:54:46.025342+05:30"
+    created: "2022-09-26T09:47:26.0796+05:30"
     description: A Helm chart for Kubernetes
-    digest: ac9efb273bcc4e43e1c57fc025c0ee34bf67a9157056a393f6f628f8cfbf2828
+    digest: e525bd2cc2985c1bc24f49cf25c835ff13cfe78d51cabb27c9e89083f443cdb4
     name: deepfence-k8s-scanner
     type: application
     urls:
     - deepfence-k8s-scanner-0.1.0.tgz
     version: 0.1.0
-generated: "2022-09-22T11:54:46.024639+05:30"
+generated: "2022-09-26T09:47:26.078914+05:30"
