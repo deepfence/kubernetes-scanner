@@ -5,8 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/deepfence/kspm/util"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -15,6 +13,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/deepfence/kspm/util"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -31,30 +32,35 @@ const (
 )
 
 func main() {
+	flag.Parse()
+
+	// setup logrus
+	logrus.SetOutput(os.Stdout)
+	logrus.SetReportCaller(true)
+	logrus.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp:          true,
+		PadLevelText:           true,
+		TimestampFormat:        "2006-01-02 15:04:05",
+		DisableLevelTruncation: true,
+		CallerPrettyfier: func(f *runtime.Frame) (string, string) {
+			// return funcName(f.Func.Name()) + "()", " " + path.Base(f.File) + ":" + strconv.Itoa(f.Line)
+			return "", path.Base(f.File) + ":" + strconv.Itoa(f.Line)
+		},
+	})
+
+	if *debug {
+		logrus.SetLevel(logrus.DebugLevel)
+	} else {
+		logrus.SetLevel(logrus.InfoLevel)
+	}
+
 	_, err := exec.Command("/bin/sh", "/home/deepfence/token.sh").CombinedOutput()
 	if err != nil {
 		logrus.Error(err)
 	} else {
 		logrus.Debug("Token generated successfully")
 	}
-	flag.Parse()
 
-	customFormatter := new(logrus.TextFormatter)
-	customFormatter.FullTimestamp = true
-	customFormatter.DisableLevelTruncation = true
-	customFormatter.PadLevelText = true
-	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
-	customFormatter.CallerPrettyfier = func(f *runtime.Frame) (string, string) {
-		return "", path.Base(f.File) + ":" + strconv.Itoa(f.Line)
-	}
-
-	logrus.SetReportCaller(true)
-	logrus.SetFormatter(customFormatter)
-	if *debug {
-		logrus.SetLevel(logrus.DebugLevel)
-	} else {
-		logrus.SetLevel(logrus.InfoLevel)
-	}
 	nodeId := util.GetKubernetesClusterId()
 	if nodeId == "" {
 		nodeId = *nodeName
@@ -97,9 +103,10 @@ func registerNodeId(config util.Config) error {
 	err = json.Unmarshal(resp, &scansResponse)
 	if err != nil {
 		return err
-	} else {
-		logrus.Debug(resp)
 	}
+
+	logrus.Debug(util.PrintJSON(scansResponse))
+
 	pendingScans := make(map[string]util.PendingScan)
 	for scanId, scanDetails := range scansResponse.Data.Scans {
 		if _, ok := pendingScans[scanId]; !ok {
@@ -110,8 +117,11 @@ func registerNodeId(config util.Config) error {
 			}
 			scanResult, err := RunComplianceScan()
 			if err != nil {
-				err = SendScanStatustoConsole(scanId, util.NsaCisaCheckType, err.Error(), "ERROR", nil, config)
 				logrus.Error(err)
+				err = SendScanStatustoConsole(scanId, util.NsaCisaCheckType, err.Error(), "ERROR", nil, config)
+				if err != nil {
+					logrus.Error(err)
+				}
 				continue
 			}
 			config.ScanId = scanId
@@ -164,6 +174,7 @@ func RunComplianceScan() (util.ComplianceGroup, error) {
 }
 
 func SendScanStatustoConsole(scanId string, scanType string, scanMsg string, status string, extras map[string]interface{}, config util.Config) error {
+	logrus.Infof("scanId: %s scanType: %s status: %s", scanId, scanType, status)
 	scanMsg = strings.Replace(scanMsg, "\n", " ", -1)
 	scanLog := map[string]interface{}{
 		"scan_id":                 scanId,
