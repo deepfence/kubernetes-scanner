@@ -1,32 +1,29 @@
 package util
 
 const (
-	NsaCisaCheckType            = "nsa-cisa"
-	charset                     = "abcdefghijklmnopqrstuvwxyz" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	ComplianceScanIndexName     = "compliance"
-	ComplianceScanLogsIndexName = "compliance-scan-logs"
-	StatusAlarm                 = "alarm"
-	StatusOk                    = "ok"
-	StatusInfo                  = "info"
-	StatusSkip                  = "skip"
-	StatusError                 = "error"
+	NsaCisaCheckType   = "nsa-cisa"
+	charset            = "abcdefghijklmnopqrstuvwxyz" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	ComplianceScan     = "compliance"
+	ComplianceScanLogs = "compliance-scan-logs"
+	StatusAlarm        = "alarm"
+	StatusOk           = "ok"
+	StatusInfo         = "info"
+	StatusSkip         = "skip"
+	StatusError        = "error"
 )
 
 type Config struct {
-	Mode                  string `json:"mode,omitempty"`
-	Output                string `json:"output,omitempty"`
-	Quiet                 bool   `json:"quiet,omitempty"`
-	ManagementConsoleUrl  string `json:"management_console_url,omitempty"`
-	ManagementConsolePort string `json:"management_console_port,omitempty"`
-	DeepfenceKey          string `json:"deepfence_key,omitempty"`
-	ComplianceCheckType   string `json:"compliance_check_type,omitempty"`
-	ComplianceBenchmark   string `json:"compliance_benchmark,omitempty"`
-	CloudProvider         string `json:"cloud_provider,omitempty"`
-	ScanId                string `json:"scan_id,omitempty"`
-	NodeId                string `json:"node_id,omitempty"`
-	NodeName              string `json:"node_name,omitempty"`
-	HttpServerRequired    bool
-	Token                 string
+	ManagementConsoleUrl      string `json:"management_console_url,omitempty"`
+	ManagementConsolePort     string `json:"management_console_port,omitempty"`
+	DeepfenceKey              string `json:"deepfence_key,omitempty"`
+	ComplianceCheckType       string `json:"compliance_check_type,omitempty"`
+	ComplianceBenchmark       string `json:"compliance_benchmark,omitempty"`
+	CloudProvider             string `json:"cloud_provider,omitempty"`
+	ScanId                    string `json:"scan_id,omitempty"`
+	NodeId                    string `json:"node_id,omitempty"`
+	NodeName                  string `json:"node_name,omitempty"`
+	ComplianceResultsFilePath string
+	ComplianceStatusFilePath  string
 }
 
 type ComplianceDoc struct {
@@ -102,22 +99,4 @@ type ComplianceGroup struct {
 	} `json:"summary"`
 	Groups   []ComplianceGroup   `json:"groups"`
 	Controls []ComplianceControl `json:"controls"`
-}
-
-type ScansResponse struct {
-	Data PendingScans `json:"data"`
-}
-
-type PendingScanMap map[string]PendingScan
-
-type PendingScans struct {
-	Scans   PendingScanMap `json:"scans"`
-	Refresh string         `json:"refresh"`
-}
-
-type PendingScan struct {
-	ScanId    string   `json:"scan_id"`
-	AccountId string   `json:"account_id"`
-	ScanType  string   `json:"scan_type"`
-	Controls  []string `json:"controls"`
 }

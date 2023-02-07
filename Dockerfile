@@ -1,10 +1,10 @@
-FROM golang:1.18-bullseye AS build
+FROM golang:1.19-bullseye AS build
 
-WORKDIR /home/deepfence/src/kspm
+WORKDIR /home/deepfence/src/kubernetes-scanner
 COPY . .
-RUN go build -o kspm . \
-    && chmod 777 kspm \
-    && cp /home/deepfence/src/kspm/kspm /home/deepfence/ \
+RUN go build -o kubernetes-scanner . \
+    && chmod 777 kubernetes-scanner \
+    && cp /home/deepfence/src/kubernetes-scanner/kubernetes-scanner /home/deepfence/ \
     && rm -r /home/deepfence/src/*
 
 FROM debian:bullseye-slim
@@ -18,25 +18,16 @@ RUN apt-get update \
 
 USER deepfence
 
-COPY --from=build /home/deepfence/kspm /usr/local/bin/kspm
+COPY --from=build /home/deepfence/kubernetes-scanner /usr/local/bin/kubernetes-scanner
 WORKDIR /opt/steampipe
 
 USER root
-COPY kubeconfig /home/deepfence/.kube/config
-COPY token.sh /home/deepfence/token.sh
 
-RUN chown deepfence /opt/steampipe /usr/local/bin/kspm /home/deepfence/.kube/config /home/deepfence/token.sh \
-    && chmod 777 /home/deepfence/.kube /home/deepfence/.kube/config
+RUN chown deepfence /opt/steampipe /usr/local/bin/kubernetes-scanner
 
 USER deepfence
 RUN steampipe plugin install steampipe \
     && steampipe plugin install kubernetes \
     && git clone https://github.com/turbot/steampipe-mod-kubernetes-compliance.git
 
-#COPY kubeconfig /home/deepfence/.kube/config
-#COPY token.sh /home/deepfence/token.sh
-#RUN chown deepfence /home/deepfence/.kube/config
-#RUN chown deepfence /home/deepfence/token.sh
-EXPOSE 8080
-
-ENTRYPOINT ["/usr/local/bin/kspm"]
+ENTRYPOINT ["/usr/local/bin/kubernetes-scanner"]

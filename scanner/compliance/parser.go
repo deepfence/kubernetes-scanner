@@ -1,15 +1,16 @@
-package main
+package compliance
 
 import (
 	"crypto/md5"
 	"fmt"
-	"github.com/deepfence/kspm/util"
 	"strings"
+
+	"github.com/deepfence/kubernetes-scanner/util"
 )
 
-func parseControlResult(complianceDocs *[]util.ComplianceDoc, complianceSummary *map[string]map[string]struct{}, group util.ComplianceGroup, control util.ComplianceControl, result util.ComplianceControlResult, config util.Config) {
+func (c *ComplianceScanner) parseControlResult(complianceDocs *[]util.ComplianceDoc, complianceSummary *map[string]map[string]struct{}, group util.ComplianceGroup, control util.ComplianceControl, result util.ComplianceControlResult) {
 
-	docId := fmt.Sprintf("%x", md5.Sum([]byte(config.ScanId+control.ControlID+
+	docId := fmt.Sprintf("%x", md5.Sum([]byte(c.config.ScanId+control.ControlID+
 		result.Resource+result.Reason)))
 	(*complianceSummary)[result.Status][docId] = struct{}{}
 	prefix := "kubernetes"
@@ -26,13 +27,13 @@ func parseControlResult(complianceDocs *[]util.ComplianceDoc, complianceSummary 
 		TestInfo:              control.Title,
 		ComplianceCheckType:   util.NsaCisaCheckType,
 		NodeType:              "kubernetes",
-		NodeName:              config.NodeName,
-		NodeId:                config.NodeId,
-		KubernetesClusterName: config.NodeName,
-		KubernetesClusterId:   config.NodeId,
-		ScanId:                config.ScanId,
+		NodeName:              c.config.NodeName,
+		NodeId:                c.config.NodeId,
+		KubernetesClusterName: c.config.NodeName,
+		KubernetesClusterId:   c.config.NodeId,
+		ScanId:                c.config.ScanId,
 		Masked:                "false",
-		Type:                  util.ComplianceScanIndexName,
+		Type:                  util.ComplianceScan,
 		TestNumber:            control.ControlID,
 		TestDesc:              control.Description,
 		TestSeverity:          control.Severity,
@@ -40,18 +41,18 @@ func parseControlResult(complianceDocs *[]util.ComplianceDoc, complianceSummary 
 	*complianceDocs = append(*complianceDocs, complianceDoc)
 }
 
-func parseGroup(complianceDocs *[]util.ComplianceDoc, complianceSummary *map[string]map[string]struct{}, group util.ComplianceGroup, config util.Config) {
+func (c *ComplianceScanner) parseGroup(complianceDocs *[]util.ComplianceDoc, complianceSummary *map[string]map[string]struct{}, group util.ComplianceGroup) {
 	for _, control := range group.Controls {
 		for _, result := range control.Results {
-			parseControlResult(complianceDocs, complianceSummary, group, control, result, config)
+			c.parseControlResult(complianceDocs, complianceSummary, group, control, result)
 		}
 	}
 	for _, childGroup := range group.Groups {
-		parseGroup(complianceDocs, complianceSummary, childGroup, config)
+		c.parseGroup(complianceDocs, complianceSummary, childGroup)
 	}
 }
 
-func ParseComplianceResults(complianceResults util.ComplianceGroup, config util.Config) ([]util.ComplianceDoc, util.ComplianceSummary, error) {
+func (c *ComplianceScanner) ParseComplianceResults(complianceResults util.ComplianceGroup) ([]util.ComplianceDoc, util.ComplianceSummary, error) {
 	var complianceDocs []util.ComplianceDoc
 	complianceSummaryMap := map[string]map[string]struct{}{
 		util.StatusAlarm: make(map[string]struct{}),
@@ -62,7 +63,7 @@ func ParseComplianceResults(complianceResults util.ComplianceGroup, config util.
 		"":               make(map[string]struct{}),
 	}
 	for _, group := range complianceResults.Groups {
-		parseGroup(&complianceDocs, &complianceSummaryMap, group, config)
+		c.parseGroup(&complianceDocs, &complianceSummaryMap, group)
 	}
 	return complianceDocs, util.ComplianceSummary{
 		Alarm: len(complianceSummaryMap[util.StatusAlarm]),
