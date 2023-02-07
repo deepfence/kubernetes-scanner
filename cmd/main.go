@@ -22,22 +22,26 @@ var (
 func main() {
 	flag.Parse()
 
-	customFormatter := new(logrus.TextFormatter)
-	customFormatter.FullTimestamp = true
-	customFormatter.DisableLevelTruncation = true
-	customFormatter.PadLevelText = true
-	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
-	customFormatter.CallerPrettyfier = func(f *runtime.Frame) (string, string) {
-		return "", path.Base(f.File) + ":" + strconv.Itoa(f.Line)
-	}
-
+	// setup logrus
+	logrus.SetOutput(os.Stdout)
 	logrus.SetReportCaller(true)
-	logrus.SetFormatter(customFormatter)
+	logrus.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp:          true,
+		PadLevelText:           true,
+		TimestampFormat:        "2006-01-02 15:04:05",
+		DisableLevelTruncation: true,
+		CallerPrettyfier: func(f *runtime.Frame) (string, string) {
+			// return funcName(f.Func.Name()) + "()", " " + path.Base(f.File) + ":" + strconv.Itoa(f.Line)
+			return "", path.Base(f.File) + ":" + strconv.Itoa(f.Line)
+		},
+	})
+
 	if *debug {
 		logrus.SetLevel(logrus.DebugLevel)
 	} else {
 		logrus.SetLevel(logrus.InfoLevel)
 	}
+
 	nodeId := util.GetKubernetesClusterId()
 	if nodeId == "" {
 		nodeId = *clusterName
