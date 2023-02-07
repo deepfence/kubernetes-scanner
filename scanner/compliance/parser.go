@@ -17,16 +17,15 @@ func (c *ComplianceScanner) parseControlResult(complianceDocs *[]util.Compliance
 	service := strings.TrimPrefix(control.Tags.Service, prefix)
 
 	complianceDoc := util.ComplianceDoc{
-		Timestamp: util.GetDatetimeNow(),
-		// Count:               1,
+		Timestamp:             util.GetDatetimeNow(),
 		TestRationale:         result.Reason,
 		Resource:              result.Resource,
 		Status:                result.Status,
 		Group:                 group.Title,
 		TestCategory:          service,
 		TestInfo:              control.Title,
-		ComplianceCheckType:   util.NsaCisaCheckType,
-		NodeType:              "kubernetes",
+		ComplianceCheckType:   c.config.ComplianceCheckType,
+		NodeType:              "kubernetes_cluster",
 		NodeName:              c.config.NodeName,
 		NodeId:                c.config.NodeId,
 		KubernetesClusterName: c.config.NodeName,

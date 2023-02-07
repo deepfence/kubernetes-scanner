@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -120,4 +121,29 @@ func StructToMap(obj interface{}) (newMap map[string]interface{}, err error) {
 
 	err = json.Unmarshal(data, &newMap) // Convert to a map
 	return
+}
+
+func writeScanDataToFile(scanMsg string, filename string) error {
+	err := os.MkdirAll(filepath.Dir(filename), 0755)
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	scanMsg = strings.Replace(scanMsg, "\n", " ", -1)
+	if _, err = f.WriteString(scanMsg + "\n"); err != nil {
+		return err
+	}
+	return nil
+}
+
+func getDfInstallDir() string {
+	installDir, exists := os.LookupEnv("DF_INSTALL_DIR")
+	if exists {
+		return installDir
+	} else {
+		return ""
+	}
 }

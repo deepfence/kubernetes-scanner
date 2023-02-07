@@ -17,8 +17,6 @@ type Config struct {
 	ManagementConsolePort     string `json:"management_console_port,omitempty"`
 	DeepfenceKey              string `json:"deepfence_key,omitempty"`
 	ComplianceCheckType       string `json:"compliance_check_type,omitempty"`
-	ComplianceBenchmark       string `json:"compliance_benchmark,omitempty"`
-	CloudProvider             string `json:"cloud_provider,omitempty"`
 	ScanId                    string `json:"scan_id,omitempty"`
 	NodeId                    string `json:"node_id,omitempty"`
 	NodeName                  string `json:"node_name,omitempty"`

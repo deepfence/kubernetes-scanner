@@ -14,23 +14,17 @@ import (
 )
 
 type ComplianceScanner struct {
-	config   util.Config
-	scanID   string
-	scanType string
+	config util.Config
 }
 
-func NewComplianceScanner(config util.Config, scanID string, scanType string) (*ComplianceScanner, error) {
-	if scanID != util.NsaCisaCheckType {
-		return nil, errors.New(fmt.Sprintf("invalid scan_type %s", scanType))
+func NewComplianceScanner(config util.Config) (*ComplianceScanner, error) {
+	if config.ComplianceCheckType != util.NsaCisaCheckType {
+		return nil, errors.New(fmt.Sprintf("invalid scan_type %s", config.ComplianceCheckType))
 	}
-	if scanID == "" {
+	if config.ScanId == "" {
 		return nil, errors.New("scan_id is empty")
 	}
-	return &ComplianceScanner{
-		config:   config,
-		scanID:   scanID,
-		scanType: scanType,
-	}, nil
+	return &ComplianceScanner{config: config}, nil
 }
 
 func (c *ComplianceScanner) RunComplianceScan() error {
@@ -83,7 +77,7 @@ func (c *ComplianceScanner) RunComplianceScan() error {
 func (c *ComplianceScanner) PublishScanStatus(scanMsg string, status string, extras map[string]interface{}) error {
 	scanMsg = strings.Replace(scanMsg, "\n", " ", -1)
 	scanLog := map[string]interface{}{
-		"scan_id":                 c.scanID,
+		"scan_id":                 c.config.ScanId,
 		"time_stamp":              util.GetIntTimestamp(),
 		"@timestamp":              util.GetDatetimeNow(),
 		"scan_message":            scanMsg,
@@ -93,7 +87,7 @@ func (c *ComplianceScanner) PublishScanStatus(scanMsg string, status string, ext
 		"node_id":                 c.config.NodeId,
 		"kubernetes_cluster_name": c.config.NodeName,
 		"kubernetes_cluster_id":   c.config.NodeId,
-		"compliance_check_type":   c.scanType,
+		"compliance_check_type":   c.config.ComplianceCheckType,
 	}
 	for k, v := range extras {
 		scanLog[k] = v
