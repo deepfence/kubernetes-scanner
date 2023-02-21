@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/deepfence/kubernetes-scanner/util"
@@ -92,12 +93,16 @@ func (c *ComplianceScanner) PublishScanStatus(scanMsg string, status string, ext
 	for k, v := range extras {
 		scanLog[k] = v
 	}
-	scanLogJson := util.ToKafkaRestFormat([]map[string]interface{}{scanLog})
-	// TODO: Save to file
-	if len(scanLogJson) > 0 {
-
+	err := os.MkdirAll(filepath.Dir(c.config.ComplianceStatusFilePath), 0755)
+	f, err := os.OpenFile(c.config.ComplianceResultsFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	byteJson, err := json.Marshal(scanLog)
+	if err != nil {
+		return err
 	}
-	return nil
+	if _, err = f.WriteString(string(byteJson) + "\n"); err != nil {
+		logrus.Errorf("%+v \n", err)
+	}
+	return err
 }
 
 func (c *ComplianceScanner) IngestComplianceResults(complianceDocs []util.ComplianceDoc) error {
@@ -111,9 +116,23 @@ func (c *ComplianceScanner) IngestComplianceResults(complianceDocs []util.Compli
 			logrus.Error(err)
 		}
 	}
-	// TODO: Save to file
-
-	//ingestScanStatusAPI := fmt.Sprintf("https://" + config.ManagementConsoleUrl + "/ingest/topics/" + util.ComplianceScanIndexName)
-	//return util.PublishDocument(ingestScanStatusAPI, util.ToKafkaRestFormat(data), config)
+	err := os.MkdirAll(filepath.Dir(c.config.ComplianceResultsFilePath), 0755)
+	f, err := os.OpenFile(c.config.ComplianceResultsFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	for _, d := range data {
+		byteJson, err := json.Marshal(d)
+		if err != nil {
+			logrus.Errorf("%+v \n", err)
+			continue
+		}
+		strJson := string(byteJson)
+		strJson = strings.Replace(strJson, "\n", " ", -1)
+		if _, err = f.WriteString(strJson + "\n"); err != nil {
+			logrus.Errorf("%+v \n", err)
+		}
+	}
 	return nil
 }
