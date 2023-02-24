@@ -31,7 +31,6 @@ func NewComplianceScanner(config util.Config) (*ComplianceScanner, error) {
 func (c *ComplianceScanner) RunComplianceScan() error {
 	err := c.PublishScanStatus("", "INPROGRESS", nil)
 	if err != nil {
-		logrus.Error("here1")
 		return err
 	}
 	tempFileName := fmt.Sprintf("/tmp/%s.json", util.RandomString(12))
@@ -41,32 +40,26 @@ func (c *ComplianceScanner) RunComplianceScan() error {
 	stdOut, stdErr := exec.Command("bash", "-c", cmd).CombinedOutput()
 	var complianceResults util.ComplianceGroup
 	if _, err := os.Stat(tempFileName); errors.Is(err, os.ErrNotExist) {
-		logrus.Error("here2")
 		return fmt.Errorf("%s: %v", stdOut, stdErr)
 	}
 	tempFile, err := os.Open(tempFileName)
 	if err != nil {
-		logrus.Error("here3")
 		return err
 	}
 	results, err := io.ReadAll(tempFile)
 	if err != nil {
-		logrus.Error("here4")
 		return err
 	}
 	err = json.Unmarshal(results, &complianceResults)
 	if err != nil {
-		logrus.Error("here5")
 		return err
 	}
 	complianceDocs, complianceSummary, err := c.ParseComplianceResults(complianceResults)
 	if err != nil {
-		logrus.Error("here6")
 		return err
 	}
 	err = c.IngestComplianceResults(complianceDocs)
 	if err != nil {
-		logrus.Error("here7")
 		logrus.Error(err)
 	}
 	extras := map[string]interface{}{
@@ -77,10 +70,9 @@ func (c *ComplianceScanner) RunComplianceScan() error {
 	}
 	err = c.PublishScanStatus("", "COMPLETED", extras)
 	if err != nil {
-		logrus.Error("here8")
 		logrus.Error(err)
 	}
-	return nil
+	return err
 }
 
 func (c *ComplianceScanner) PublishScanStatus(scanMsg string, status string, extras map[string]interface{}) error {
