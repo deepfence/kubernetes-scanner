@@ -68,7 +68,7 @@ func (c *ComplianceScanner) RunComplianceScan() error {
 		"result":       complianceSummary,
 		"total_checks": complianceSummary.Alarm + complianceSummary.Ok + complianceSummary.Info + complianceSummary.Skip + complianceSummary.Error,
 	}
-	err = c.PublishScanStatus("", "COMPLETED", extras)
+	err = c.PublishScanStatus("", "COMPLETE", extras)
 	if err != nil {
 		logrus.Error(err)
 	}
