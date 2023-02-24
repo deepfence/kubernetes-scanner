@@ -72,7 +72,7 @@ func (c *ComplianceScanner) RunComplianceScan() error {
 	if err != nil {
 		logrus.Error(err)
 	}
-	return nil
+	return err
 }
 
 func (c *ComplianceScanner) PublishScanStatus(scanMsg string, status string, extras map[string]interface{}) error {
@@ -94,9 +94,14 @@ func (c *ComplianceScanner) PublishScanStatus(scanMsg string, status string, ext
 		scanLog[k] = v
 	}
 	err := os.MkdirAll(filepath.Dir(c.config.ComplianceStatusFilePath), 0755)
-	f, err := os.OpenFile(c.config.ComplianceResultsFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile(c.config.ComplianceStatusFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		logrus.Errorf("error opening file:%v", err)
+		return err
+	}
 	byteJson, err := json.Marshal(scanLog)
 	if err != nil {
+		logrus.Errorf("Error in formatting json: %+v", scanLog)
 		return err
 	}
 	if _, err = f.WriteString(string(byteJson) + "\n"); err != nil {

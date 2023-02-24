@@ -54,7 +54,7 @@ func main() {
 		NodeId:                nodeId,
 	}
 
-	complianceScanner, err := compliance.NewComplianceScanner(config, "", util.NsaCisaCheckType)
+	complianceScanner, err := compliance.NewComplianceScanner(config)
 	if err != nil {
 		logrus.Error(err.Error())
 		return

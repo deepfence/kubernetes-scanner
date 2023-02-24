@@ -79,7 +79,7 @@ func GetIntTimestamp() int64 {
 }
 
 func GetDatetimeNow() string {
-	return time.Now().UTC().Format("2006-01-02T15:04:05.000")
+	return time.Now().UTC().Format("2006-01-02T15:04:05.000") + "Z"
 }
 
 var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
