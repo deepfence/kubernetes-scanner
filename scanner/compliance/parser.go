@@ -31,7 +31,7 @@ func (c *ComplianceScanner) parseControlResult(complianceDocs *[]util.Compliance
 		KubernetesClusterName: c.config.NodeName,
 		KubernetesClusterId:   c.config.NodeId,
 		ScanId:                c.config.ScanId,
-		Masked:                "false",
+		Masked:                false,
 		Type:                  util.ComplianceScan,
 		TestNumber:            control.ControlID,
 		TestDesc:              control.Description,

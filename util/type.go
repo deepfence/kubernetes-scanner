@@ -28,7 +28,7 @@ type ComplianceDoc struct {
 	Type                  string `json:"type"`
 	TimeStamp             int64  `json:"time_stamp"`
 	Timestamp             string `json:"@timestamp"`
-	Masked                string `json:"masked"`
+	Masked                bool   `json:"masked"`
 	NodeId                string `json:"node_id"`
 	NodeType              string `json:"node_type"`
 	KubernetesClusterName string `json:"kubernetes_cluster_name"`
