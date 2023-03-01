@@ -16,7 +16,8 @@ func parseControlResult(complianceDocs *[]util.ComplianceDoc, complianceSummary 
 	service := strings.TrimPrefix(control.Tags.Service, prefix)
 
 	complianceDoc := util.ComplianceDoc{
-		Timestamp: util.GetDatetimeNow(),
+		ComplianceNodeType: "kubernetes",
+		Timestamp:          util.GetDatetimeNow(),
 		// Count:               1,
 		TestRationale:         result.Reason,
 		Resource:              result.Resource,
