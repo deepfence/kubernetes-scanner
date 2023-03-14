@@ -33,34 +33,41 @@ func (c *ComplianceScanner) RunComplianceScan() error {
 	if err != nil {
 		return err
 	}
-	tempFileName := fmt.Sprintf("/tmp/%s.json", util.RandomString(12))
-	//defer os.Remove(tempFileName)
+	tempFileName := fmt.Sprintf("/tmp/tmp-%s.json", c.config.ScanId)
+	defer os.Remove(tempFileName)
 	spKubePath := "/opt/steampipe/steampipe-mod-kubernetes-compliance"
 	cmd := fmt.Sprintf("cd %s && steampipe check --progress=false --output=none --export=%s benchmark.nsa_cisa_v1", spKubePath, tempFileName)
 	stdOut, stdErr := exec.Command("bash", "-c", cmd).CombinedOutput()
 	var complianceResults util.ComplianceGroup
 	if _, err := os.Stat(tempFileName); errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf("%s: %v", stdOut, stdErr)
+		err = fmt.Errorf("%s: %v", stdOut, stdErr)
+		c.publishErrorStatus(err.Error())
+		return err
 	}
 	tempFile, err := os.Open(tempFileName)
 	if err != nil {
+		c.publishErrorStatus(err.Error())
 		return err
 	}
 	results, err := io.ReadAll(tempFile)
 	if err != nil {
+		c.publishErrorStatus(err.Error())
 		return err
 	}
 	err = json.Unmarshal(results, &complianceResults)
 	if err != nil {
+		c.publishErrorStatus(err.Error())
 		return err
 	}
 	complianceDocs, complianceSummary, err := c.ParseComplianceResults(complianceResults)
 	if err != nil {
+		c.publishErrorStatus(err.Error())
 		return err
 	}
 	err = c.IngestComplianceResults(complianceDocs)
 	if err != nil {
-		logrus.Error(err)
+		c.publishErrorStatus(err.Error())
+		return err
 	}
 	extras := map[string]interface{}{
 		"node_name":    c.config.NodeName,
@@ -71,8 +78,16 @@ func (c *ComplianceScanner) RunComplianceScan() error {
 	err = c.PublishScanStatus("", "COMPLETE", extras)
 	if err != nil {
 		logrus.Error(err)
+		return err
 	}
-	return err
+	return nil
+}
+
+func (c *ComplianceScanner) publishErrorStatus(scanMsg string) {
+	err := c.PublishScanStatus(scanMsg, "ERROR", nil)
+	if err != nil {
+		logrus.Error(err)
+	}
 }
 
 func (c *ComplianceScanner) PublishScanStatus(scanMsg string, status string, extras map[string]interface{}) error {
@@ -122,6 +137,9 @@ func (c *ComplianceScanner) IngestComplianceResults(complianceDocs []util.Compli
 		}
 	}
 	err := os.MkdirAll(filepath.Dir(c.config.ComplianceResultsFilePath), 0755)
+	if err != nil {
+		return err
+	}
 	f, err := os.OpenFile(c.config.ComplianceResultsFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err

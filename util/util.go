@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -80,35 +79,6 @@ func GetIntTimestamp() int64 {
 
 func GetDatetimeNow() string {
 	return time.Now().UTC().Format("2006-01-02T15:04:05.000") + "Z"
-}
-
-var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
-
-func RandomStringWithCharset(length int, charset string) string {
-	b := make([]byte, length)
-	for i := range b {
-		b[i] = charset[seededRand.Intn(len(charset))]
-	}
-	return string(b)
-}
-
-func RandomString(length int) string {
-	return RandomStringWithCharset(length, charset)
-}
-
-// ToKafkaRestFormat data needs to be in this format for kafka rest proxy
-// {"records":[{"value":<record1>},{"value":record2}]}
-func ToKafkaRestFormat(data []map[string]interface{}) string {
-	values := make([]string, len(data))
-	for index, d := range data {
-		encoded, err := json.Marshal(&d)
-		if err != nil {
-			logrus.Errorf("failed to encode doc: %s", err)
-			continue
-		}
-		values[index] = "{\"value\":" + string(encoded) + "}"
-	}
-	return "{\"records\":[" + strings.Join(values, ",") + "]}"
 }
 
 // StructToMap Converts a struct to a map while maintaining the json alias as keys
