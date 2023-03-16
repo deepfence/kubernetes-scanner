@@ -28,6 +28,7 @@ type ComplianceDoc struct {
 	Type                string `json:"type"`
 	Timestamp           string `json:"@timestamp"`
 	Masked              bool   `json:"masked"`
+	NodeId              string `json:"node_id"`
 	NodeType            string `json:"node_type"`
 	TestCategory        string `json:"test_category"`
 	TestNumber          string `json:"test_number"`

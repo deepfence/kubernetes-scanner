@@ -25,6 +25,7 @@ func (c *ComplianceScanner) parseControlResult(complianceDocs *[]util.Compliance
 		TestCategory:        service,
 		TestInfo:            control.Title,
 		ComplianceCheckType: c.config.ComplianceCheckType,
+		NodeId:              fmt.Sprintf("%x", md5.Sum([]byte(c.config.NodeId+c.config.ScanId+control.ControlID+result.Resource+result.Reason))),
 		NodeType:            "kubernetes_cluster",
 		ScanId:              c.config.ScanId,
 		Masked:              false,
