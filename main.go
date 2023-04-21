@@ -136,6 +136,7 @@ func registerNodeId(config util.Config) error {
 			extras := map[string]interface{}{
 				"node_name":    config.NodeName,
 				"node_id":      config.NodeId,
+				"version":      os.Getenv("VERSION"),
 				"result":       complianceSummary,
 				"total_checks": complianceSummary.Alarm + complianceSummary.Ok + complianceSummary.Info + complianceSummary.Skip + complianceSummary.Error,
 			}

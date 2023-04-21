@@ -13,7 +13,7 @@ LABEL deepfence.role=system
 
 RUN apt-get update \
     && apt-get install -y bash curl wget git \
-    && /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh)" \
+    && /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh) v0.19.4" \
     && useradd -rm -d /home/deepfence -s /bin/bash -g root -G sudo -u 1001 deepfence
 
 USER deepfence
@@ -29,10 +29,10 @@ RUN chown deepfence /opt/steampipe /usr/local/bin/kspm /home/deepfence/.kube/con
     && chmod 777 /home/deepfence/.kube /home/deepfence/.kube/config
 
 USER deepfence
-RUN steampipe plugin install steampipe \
-    && steampipe plugin install kubernetes \
-    && git clone https://github.com/turbot/steampipe-mod-kubernetes-compliance.git
-
+RUN steampipe plugin install steampipe@0.7.0 \
+    && steampipe plugin install kubernetes@0.18.1 \
+    && git clone https://github.com/turbot/steampipe-mod-kubernetes-compliance.git  --branch v0.8
+ENV VERSION=1.5.0
 #COPY kubeconfig /home/deepfence/.kube/config
 #COPY token.sh /home/deepfence/token.sh
 #RUN chown deepfence /home/deepfence/.kube/config
