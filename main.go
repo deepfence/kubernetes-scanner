@@ -92,7 +92,7 @@ func runServices(config util.Config) {
 }
 
 func registerNodeId(config util.Config) error {
-	registerNodePayload := `{"node_id": "` + config.NodeId + `", "node_name": "` + config.NodeName + `"}`
+	registerNodePayload := `{"node_id": "` + config.NodeId + `", "node_name": "` + config.NodeName + `", "version": "` + os.Getenv("VERSION") + `"}`
 	resp, _, err := util.HttpRequest(MethodPost,
 		"https://"+config.ManagementConsoleUrl+"/deepfence/v1.5/cloud_compliance/kubernetes",
 		registerNodePayload, map[string]string{}, config)
