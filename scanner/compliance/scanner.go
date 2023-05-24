@@ -29,7 +29,7 @@ func NewComplianceScanner(config util.Config) (*ComplianceScanner, error) {
 }
 
 func (c *ComplianceScanner) RunComplianceScan() error {
-	err := c.PublishScanStatus("", "INPROGRESS", nil)
+	err := c.PublishScanStatus("", "IN_PROGRESS", nil)
 	if err != nil {
 		return err
 	}
