@@ -14,6 +14,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	steampipeKubernetesCompliancePath = "/opt/steampipe/steampipe-mod-kubernetes-compliance"
+)
+
 type ComplianceScanner struct {
 	config util.Config
 }
@@ -35,9 +39,11 @@ func (c *ComplianceScanner) RunComplianceScan() error {
 	}
 	tempFileName := fmt.Sprintf("/tmp/tmp-%s.json", c.config.ScanId)
 	defer os.Remove(tempFileName)
-	spKubePath := "/opt/steampipe/steampipe-mod-kubernetes-compliance"
-	cmd := fmt.Sprintf("cd %s && steampipe check --progress=false --output=none --export=%s benchmark.nsa_cisa_v1", spKubePath, tempFileName)
-	stdOut, stdErr := exec.Command("bash", "-c", cmd).CombinedOutput()
+
+	cmd := fmt.Sprintf("check --progress=false --output=none --export=%s benchmark.nsa_cisa_v1", tempFileName)
+	execCmd := exec.Command("steampipe", strings.Split(cmd, " ")...)
+	execCmd.Dir = steampipeKubernetesCompliancePath
+	stdOut, stdErr := execCmd.CombinedOutput()
 	var complianceResults util.ComplianceGroup
 	if _, err := os.Stat(tempFileName); errors.Is(err, os.ErrNotExist) {
 		err = fmt.Errorf("%s: %v", stdOut, stdErr)
