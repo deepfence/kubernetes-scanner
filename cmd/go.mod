@@ -1,11 +1,11 @@
-module github.com/deepfence/kubernetes-scanner/cmd
+module github.com/deepfence/kubernetes-scanner/cmd/v2
 
 go 1.20
 
-replace github.com/deepfence/kubernetes-scanner => ../
+replace github.com/deepfence/kubernetes-scanner/v2 => ../
 
 require (
-	github.com/deepfence/kubernetes-scanner v0.0.0-00010101000000-000000000000
+	github.com/deepfence/kubernetes-scanner/v2 v2.0.0-00010101000000-000000000000
 	github.com/sirupsen/logrus v1.9.3
 )
 

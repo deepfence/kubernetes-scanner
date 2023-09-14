@@ -7,8 +7,8 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/deepfence/kubernetes-scanner/scanner/compliance"
-	"github.com/deepfence/kubernetes-scanner/util"
+	"github.com/deepfence/kubernetes-scanner/v2/scanner/compliance"
+	"github.com/deepfence/kubernetes-scanner/v2/util"
 	"github.com/sirupsen/logrus"
 )
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/deepfence/kubernetes-scanner/util"
+	"github.com/deepfence/kubernetes-scanner/v2/util"
 )
 
 func (c *ComplianceScanner) parseControlResult(complianceDocs *[]util.ComplianceDoc, complianceSummary *map[string]map[string]struct{}, group util.ComplianceGroup, control util.ComplianceControl, result util.ComplianceControlResult) {

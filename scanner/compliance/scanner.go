@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/deepfence/kubernetes-scanner/util"
+	"github.com/deepfence/kubernetes-scanner/v2/util"
 	"github.com/sirupsen/logrus"
 )
 

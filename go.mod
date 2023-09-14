@@ -1,4 +1,4 @@
-module github.com/deepfence/kubernetes-scanner
+module github.com/deepfence/kubernetes-scanner/v2
 
 go 1.20
 
