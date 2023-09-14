@@ -1,7 +1,7 @@
-module github.com/deepfence/kspm
+module github.com/deepfence/kubernetes-scanner
 
-go 1.18
+go 1.20
 
-require github.com/sirupsen/logrus v1.9.0
+require github.com/sirupsen/logrus v1.9.3
 
-require golang.org/x/sys v0.1.0 // indirect
+require golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect

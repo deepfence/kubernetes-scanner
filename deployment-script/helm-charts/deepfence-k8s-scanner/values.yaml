@@ -3,17 +3,17 @@
 # Declare variables to be passed into your templates.
 
 # Management Console URL. Example: 22.33.44.55, deepfence.customer.com
-managementConsoleUrl: ""
+managementConsoleUrl: "oss.deepfence.host"
 managementConsolePort: 443
 
 # Auth: Get deepfence api key from UI -> Settings -> User Management
-deepfenceKey: ""
+deepfenceKey: "9bdd6837-8a0d-4ca4-9648-43efd06d9317"
 createDeepfenceKeySecret: true
 
 # Set custom name for the cluster and hostname prefix for agent vm's to easily identify in Deepfence UI.
 # Example: prod-cluster or dev1-cluster
 # It will be suffixed with hostname - prod-cluster-aks-agentpool-123456-vmss000001
-clusterName: ""
+clusterName: "ramanan-agent"
 
 image:
   repository: "deepfenceio/k8s-scanner"
@@ -39,7 +39,7 @@ resources:
     memory: 50Mi
   limits:
     cpu: 1000m
-    memory: 1Gi
+    memory: 2Gi
 
 nodeSelector: {"kubernetes.io/os": "linux"}
 
