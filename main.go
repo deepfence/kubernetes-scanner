@@ -210,5 +210,31 @@ func IngestComplianceResults(complianceDocs []util.ComplianceDoc, config util.Co
 		}
 	}
 	ingestScanStatusAPI := fmt.Sprintf("https://" + config.ManagementConsoleUrl + "/ingest/topics/" + util.ComplianceScanIndexName)
-	return util.PublishDocument(ingestScanStatusAPI, util.ToKafkaRestFormat(data), config)
+
+	chunkSize := util.GetEnvOrDefaultInt("PUBLISH_CHUNK_SIZE", 1000)
+
+	logrus.Infof("publish results with chunk size %d", chunkSize)
+
+	sliceLen := len(complianceDocs)
+
+	for i := 0; i < sliceLen; i += chunkSize {
+
+		end := i + chunkSize
+
+		if end > sliceLen {
+			end = sliceLen
+		}
+
+		batch := util.ToKafkaRestFormat(data[i:end])
+
+		logrus.Infof("publish docs index %d to %d of %d with size %d bytes",
+			i, end, sliceLen, len(batch))
+
+		err := util.PublishDocument(ingestScanStatusAPI, batch, config)
+		if err != nil {
+			logrus.Error(err)
+		}
+	}
+
+	return nil
 }
