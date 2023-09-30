@@ -211,7 +211,7 @@ func IngestComplianceResults(complianceDocs []util.ComplianceDoc, config util.Co
 	}
 	ingestScanStatusAPI := fmt.Sprintf("https://" + config.ManagementConsoleUrl + "/ingest/topics/" + util.ComplianceScanIndexName)
 
-	chunkSize := util.GetEnvOrDefaultInt("PUBLISH_CHUNK_SIZE", 1000)
+	chunkSize := util.GetEnvOrDefaultInt("PUBLISH_CHUNK_SIZE", 500)
 
 	logrus.Infof("publish results with chunk size %d", chunkSize)
 
