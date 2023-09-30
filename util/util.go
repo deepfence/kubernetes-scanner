@@ -2,10 +2,13 @@ package util
 
 import (
 	"encoding/json"
-	"github.com/sirupsen/logrus"
 	"math/rand"
+	"os"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 func GetIntTimestamp() int64 {
@@ -60,4 +63,18 @@ func StructToMap(obj interface{}) (newMap map[string]interface{}, err error) {
 
 	err = json.Unmarshal(data, &newMap) // Convert to a map
 	return
+}
+
+func GetEnvOrDefaultInt(envVar string, defaultInt int) int {
+	value := os.Getenv(envVar)
+	if len(value) == 0 {
+		return defaultInt
+	}
+
+	data, err := strconv.Atoi(value)
+	if err != nil {
+		return defaultInt
+	}
+
+	return data
 }
