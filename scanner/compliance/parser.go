@@ -16,10 +16,25 @@ func (c *ComplianceScanner) parseControlResult(complianceDocs *[]util.Compliance
 	prefix := "kubernetes"
 	service := strings.TrimPrefix(control.Tags.Service, prefix)
 
+	resource := result.Resource
+	var podName string
+	var podNamespace string
+	for _, dimension := range result.Dimensions {
+		switch dimension.Key {
+		case "pod_name":
+			podName = dimension.Value
+		case "namespace":
+			podNamespace = dimension.Value
+		}
+	}
+	if podName != "" {
+		resource = fmt.Sprintf("%s (Namespace: %s, ID: %s)", podName, podNamespace, result.Resource)
+	}
+
 	complianceDoc := util.ComplianceDoc{
 		Timestamp:           util.GetDatetimeNow(),
 		TestRationale:       result.Reason,
-		Resource:            result.Resource,
+		Resource:            resource,
 		Status:              result.Status,
 		Group:               group.Title,
 		TestCategory:        service,
