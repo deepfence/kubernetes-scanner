@@ -97,17 +97,9 @@ func (c *ComplianceScanner) publishErrorStatus(scanMsg string) {
 func (c *ComplianceScanner) PublishScanStatus(scanMsg string, status string, extras map[string]interface{}) error {
 	scanMsg = strings.Replace(scanMsg, "\n", " ", -1)
 	scanLog := map[string]interface{}{
-		"scan_id":                 c.config.ScanId,
-		"time_stamp":              util.GetIntTimestamp(),
-		"@timestamp":              util.GetDatetimeNow(),
-		"scan_message":            scanMsg,
-		"scan_status":             status,
-		"type":                    util.ComplianceScanLogs,
-		"node_name":               c.config.NodeName,
-		"node_id":                 c.config.NodeId,
-		"kubernetes_cluster_name": c.config.NodeName,
-		"kubernetes_cluster_id":   c.config.NodeId,
-		"compliance_check_type":   c.config.ComplianceCheckType,
+		"scan_id":      c.config.ScanId,
+		"scan_message": scanMsg,
+		"scan_status":  status,
 	}
 	for k, v := range extras {
 		scanLog[k] = v

@@ -1,4 +1,4 @@
-FROM golang:1.20-bullseye AS build
+FROM golang:1.21-bookworm AS build
 
 WORKDIR /home/deepfence/src/kubernetes-scanner
 COPY . .
@@ -22,7 +22,7 @@ COPY --from=build /home/deepfence/kubernetes-scanner /usr/local/bin/kubernetes-s
 WORKDIR /opt/steampipe
 
 USER root
-ENV VERSION=2.0.0
+ENV VERSION=2.2.0
 
 RUN chown deepfence /opt/steampipe /usr/local/bin/kubernetes-scanner
 
