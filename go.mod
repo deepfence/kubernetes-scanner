@@ -1,6 +1,6 @@
 module github.com/deepfence/kubernetes-scanner/v2
 
-go 1.21
+go 1.23.2
 
 require github.com/sirupsen/logrus v1.9.3
 
